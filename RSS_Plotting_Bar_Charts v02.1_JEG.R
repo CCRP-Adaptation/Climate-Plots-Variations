@@ -91,7 +91,7 @@ Tmax3$CF<-factor(Tmax3$CF,levels=c("Warm Dry", "Central", "Hot Wet"), ordered=is
 
     #Line plot of change in MaxTemp by CF/month
 ggplot(Tmax3, aes(x=month, y=Tmax, group=CF, colour = CF)) +
-  geom_line(size = 2, stat = "identity", fill="CF") + geom_point(shape = 21, size = 5, fill = "white") +
+  geom_line(size = 2, stat = "identity") + geom_point(shape = 21, size = 5, fill = "white") +
   theme(axis.text=element_text(size=16),
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=1.0),
@@ -109,7 +109,7 @@ Tmin3$CF<-factor(Tmin3$CF,levels=c("Warm Dry", "Hot Wet"), ordered=is.ordered(Tm
 
       ####Line Plot of change in MinTemp by CF/Month
 ggplot(Tmin3, aes(x=month, y=Tmin, group=CF, colour = CF)) +
-  geom_line(size = 2, stat = "identity", fill="CF") + 
+  geom_line(size = 2, stat = "identity") + 
   geom_point(shape = 21, size = 5, fill = "white") +
   theme(axis.text=element_text(size=16),
         axis.title.x=element_text(size=16,vjust=-0.2),
