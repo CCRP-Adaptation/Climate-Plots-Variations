@@ -92,7 +92,7 @@ ggsave(sprintf("%s_%s_%s_Avg_Monthly_Precip_Delta_Bar.png", SiteID, Lat, Lon), w
 
 #Line plot of change in MaxTemp by CF/month
 ggplot(Monthly_Tmax_delta, aes(x=month, y=Tmax, group=CF, colour = CF)) +
-  geom_line(size = 2, stat = "identity", fill="CF") + geom_point(shape = 21, size = 5, fill = "white") +
+  geom_line(size = 2, stat = "identity") + geom_point(shape = 21, size = 5, fill = "white") +
   theme(axis.text=element_text(size=16),
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.2),
@@ -107,7 +107,7 @@ ggsave(sprintf("%s_%s_%s_Avg_Monthly_Tmax_Delta_Line.png", SiteID, Lat, Lon), wi
 
 ####Line Plot of change in MinTemp by CF/Month
 ggplot(Monthly_Tmin_delta, aes(x=month, y=Tmin, group=CF, colour = CF)) +
-  geom_line(size = 2, stat = "identity", fill="CF") + 
+  geom_line(size = 2, stat = "identity") + 
   geom_point(shape = 21, size = 5, fill = "white") +
   theme(axis.text=element_text(size=16),
         axis.title.x=element_text(size=16,vjust=-0.2),
