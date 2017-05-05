@@ -428,8 +428,10 @@ Period <- rep(c(perAll, per1, per2), 4)
 
 lmTable <- cbind( Var=rep(c("Tmax", "Tmin", "Tmean", "Precip"),each=3), Period, rbind(regsTmax, regsTmin, regsTmean, regsPpt))
 
-lmTable$YrCoeff <- lmTable$YrCoeff * 100   # convert to deg(mm)/100-yrs
+lmTable$YrCoeff <- lmTable$YrCoeff * 100   # convert to degF(in)/100-yrs
 lmTable$seSlope <- lmTable$seSlope * 100
+  #add units to YrCoeff field
+colnames(lmTable) <- c("Var", "Period", "YrCoeff(degF(in)/100yrs)", "seSlope", "probCoeff", "probSign", "r2")
 
 print(lmTable, row.names = F)
 
