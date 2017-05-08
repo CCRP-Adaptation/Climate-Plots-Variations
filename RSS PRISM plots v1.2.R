@@ -518,7 +518,7 @@ pdat$clr[which(pdat$seas=="Fall")] <- "brown"
 
       # need roundDown function to define axis ranges
 
-PlotName <- "Season Decadal Anomoly Lines" 
+PlotName <- "Season Decadal Anomaly Lines" 
 a <- ggplot(pdat, aes(startYr+5, tmax, group=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
 		geom_line(colour = pdat$clr, size=1) +
@@ -621,11 +621,11 @@ bp2 <- function(yDat, xDat, pcol="lightblue", offst = 0, yLabPos=1:12)
 	{	boxplot(yDat ~ xDat, boxwex=0.2, col=pcol,
 		at=1:yLabPos + offst, add=TRUE, show.names=FALSE) }
 
-PlotName <- "Seas Decadal Tmax Tmin Anomoly Box"
+PlotName <- "Seas Decadal Tmax Tmin Anomaly Box"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
   png(OFName, width=6.5*dpi, height = 8.5*dpi)
 par(mfrow=c(2,1))
-bp1(tmaxSeas$Win, yrcat, Title="Maximum Temperature Anomoly by Season and Decade", yLabPos = yLabPs,
+bp1(tmaxSeas$Win, yrcat, Title="Maximum Temperature Anomaly by Season and Decade", yLabPos = yLabPs,
     offst=poffset[1]) 
 bp2(tmaxSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
 bp2(tmaxSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
@@ -637,16 +637,16 @@ bp2(tminSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
 bp2(tminSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
 dev.off()
 
-PlotName <- "Seas Decadal Tmean Ppt Anomoly Box"
+PlotName <- "Seas Decadal Tmean Ppt Anomaly Box"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
   png(OFName, width=6.5*dpi, height = 8.5*dpi)
 par(mfrow=c(2,1))
-bp1(tmeanSeas$Win, yrcat, Title="Mean Temperature Anomoly by Season and Decade", yLabPos = yLabPs) 
+bp1(tmeanSeas$Win, yrcat, Title="Mean Temperature Anomaly by Season and Decade", yLabPos = yLabPs) 
 bp2(tmeanSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
 bp2(tmeanSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
 bp2(tmeanSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
 
-bp1(pptSeas$Win, yrcat, Title="Preciptiation Anomaly by Season and Decade", yLabPos = yLabPs, Ylab="Precip (in/mo)") 
+bp1(pptSeas$Win, yrcat, Title="Precipitation Anomaly by Season and Decade", yLabPos = yLabPs, Ylab="Precip (in/mo)") 
 bp2(pptSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
 bp2(pptSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
 bp2(pptSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
@@ -700,7 +700,7 @@ boxplot(tmax ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpink
 boxplot(tmax ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab=tmaxLab, main="Fall")
 dev.off()
 
-PlotName <- "Decadal Seaonsal Tmin Box"
+PlotName <- "Decadal Seasonal Tmin Box"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
   png(OFName, width=6.5*dpi, height = 8.5*dpi)
   par(mfrow=c(2,2))
@@ -710,7 +710,7 @@ boxplot(tmin ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpink
 boxplot(tmin ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab=tminLab, main="Fall")
 dev.off()
 
-PlotName <- "Decadal Seaonsal Tmean Box"
+PlotName <- "Decadal Seasonal Tmean Box"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
   png(OFName, width=6.5*dpi, height = 8.5*dpi)
   par(mfrow=c(2,2))
@@ -720,7 +720,7 @@ boxplot(tmean ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpin
 boxplot(tmean ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab=tmeanLab, main="Fall")
 dev.off()
 
-PlotName <- "Decadal Seaonsal Ppt Box"
+PlotName <- "Decadal Seasonal Ppt Box"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
   png(OFName, width=6.5*dpi, height = 8.5*dpi)
   par(mfrow=c(2,2))
@@ -745,7 +745,7 @@ mTmean = mean(refData$tmean)
 mPrcp = mean(refData$ppt)
 xlabel = "Year"
 
-PlotName <- "Red-Blue Anomoly Filled Line"
+PlotName <- "Red-Blue Anomaly Filled Line"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
   png(OFName, width=6.5*dpi, height = 8.5*dpi)
   par(mfrow=c(4,1), bty="l", mar=c(4,4,1,2), cex = 1)
