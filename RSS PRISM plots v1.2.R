@@ -50,11 +50,11 @@ DF1 <- "WHSA_32.8125_-106.3125_PRISM_PptTminTmax_IntermediateFiles.RData"
 RDataFile <- DF1
 
 beginRefYr = 1900
-endRefYr	= 1970
+endRefYr = 1970
 
 BeginYr	= 1895   # is this data file or for plots?
-EndYr		= 2014
-dataEndYr = 2014   # needed for rolling mean plot below.  
+EndYr = 2015
+dataEndYr = 2015   # needed for rolling mean plot below.  
 stepYrs	= 10		  # for period plots 
 rollLen = 10      # period of calc for rolling average; default 10 = decadal
 
@@ -121,7 +121,7 @@ doP2 <- "YES"
 p1_start  = 1900
 p1_end    = 1970
 p2_start  = 1970
-p2_end    = 2014
+p2_end    = 2015
 	
 yrAvgs$tmaxP1 <- yrAvgs$tmaxAvg
 yrAvgs$tmaxP1[which(yrAvgs$cYr < p1_start | yrAvgs$cYr > p1_end)] = NA
