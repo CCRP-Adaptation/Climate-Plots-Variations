@@ -40,7 +40,7 @@ Lon = -103.5625
 Buffer <- 0.06    # dec degree.  Cell size is 0.04166
 
 BeginYr = 1895
-EndYr =  2014      # some 2015 files are provisional
+EndYr =  2015      # some 2015 files are provisional
 EndMo = 12
 Day = 15          # in output files, day of month in Date variable (req by strptime)
 
