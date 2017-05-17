@@ -96,7 +96,7 @@ ggplot(Tmax3, aes(x=month, y=Tmax, group=CF, colour = CF)) +
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=1.0),
         plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(title = "Change in average daily maximum temperature in 2040 (2025-2055) vs 1950-1999", 
+  labs(title = "Change in average daily Tmax in 2040 (2025-2055) vs 1950-1999", 
             x = "Month", y = "Change in Temperature (Degrees F)") +
   scale_color_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C")) +
   scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmax_delta$Tmax))))
@@ -115,7 +115,7 @@ ggplot(Tmin3, aes(x=month, y=Tmin, group=CF, colour = CF)) +
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=1.0),
         plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(title = paste(SiteID, "Change in average daily Tmin in 2040 (2025-2055) vs 1950-1999"),
+  labs(title = paste(SiteID, " - Change in average daily Tmin in 2040 (2025-2055) vs 1950-1999"),
             x = "Month", y = "Change in Temperature (Degrees F)") +
   scale_color_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C")) +
   scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmin_delta$Tmin))))
@@ -175,7 +175,7 @@ ggplot(TOHotTempmean, aes(x=CF,y=MeanOverHotTemp,fill=CF)) +
         axis.title.y=element_text(size=20,vjust=0.8),
         plot.title=element_text(size=24,face="bold",vjust=2)) +
   #coord_cartesian(ylim=c(50, 65)) +
-  labs(list(title = paste(SiteID, "- Avg. Tot. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
+  labs(list(title = paste(SiteID, " - Avg. Tot. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey","blue", "orange","#FFFFBF","#D7191C"))
 
@@ -204,7 +204,7 @@ ggplot(TCOHotTempmean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
         axis.title.y=element_text(size=20,vjust=0.8),
         plot.title=element_text(size=18,face="bold",vjust=2)) +
   # coord_cartesian(ylim=c(0, 40)) +
-  labs(list(title = paste(SiteID, "Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
+  labs(list(title = paste(SiteID, " - Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey", "blue","orange","#D7191C"))
 
@@ -233,7 +233,7 @@ ggplot(TUColdTempmean, aes(x=CF,y=MeanUnderColdTemp,fill=CF)) +
         axis.title.y=element_text(size=18,vjust=0.8),
         plot.title=element_text(size=18,face="bold",vjust=2)) +
     #  coord_cartesian(ylim=c(30, 65)) +
-  labs(list(title = paste(SiteID, "- Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
+  labs(list(title = paste(SiteID, " - Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
