@@ -70,6 +70,28 @@ TUColdTemp3<-subset(TotalUnderColdTemp, CF %in% FutureSubset& timeframe == "Futu
 
 ###############################################################working############################################
 
+###Scatter plot showing delta precip and tavg, color by emissions scenario, x-axis scaled 0-max, with points for averages of 3 CFs
+scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
+scatter + geom_point(aes(color=emissions),size=4) + 
+  theme(axis.text=element_text(size=20, colour='black'),
+        axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.2),
+        plot.title=element_text(size=24,face="bold",vjust=2),
+        legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
+  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
+            x = "Change in annual average temperature (F)", 
+            y = "Change in average annual precipitation (in)")) +
+  scale_colour_manual(values=c("blue", "red"))+
+  guides(color=guide_legend(title="Emissions\nScenarios\n")) +
+  # geom_rect(color = "blue", alpha=0) + 
+  #  geom_hline(aes(yintercept=365*mean(Future_Means$DeltaPr)),linetype=2) + 
+  #  geom_vline(aes(xintercept=mean(Future_Means$DeltaTavg)),linetype=2)  +
+  geom_point(aes(x=mean(DeltaTavg), y=mean(365*DeltaPr)), shape=23, size=10, fill='black', colour='black') +
+  geom_point(aes(x=mean(DeltaTavg[which(CF==Scenario1)]), y=mean(365*DeltaPr[which(CF==Scenario1)])), shape=23, size=10, fill='black', colour='black') +
+  geom_point(aes(x=mean(DeltaTavg[which(CF==Scenario2)]), y=mean(365*DeltaPr[which(CF==Scenario2)])), shape=23, size=10, fill='black', colour='black') +
+  scale_x_continuous(limits=c(0, max(Future_Means$DeltaTavg)+.25))
+
+ggsave(sprintf("%s_%s_%s_GCM_Scatter_CF_Averages_Plot.png", SiteID, Lat, Lon), width = 15, height = 9)
 
       # set CF order for bar graph of change in average monthly precip by CF 
 
