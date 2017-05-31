@@ -15,7 +15,8 @@ library(ggplot2)
 library(grid)
 
 rm(list=ls())
-
+    #  Load data file ONLY if not following previous script
+RDataFile <- "WHSA_32.8125_-106.3125_PRISM_PptTminTmax_IntermediateFiles.RData"
 #################################################
 # DataDir = location of .RData file
 # OFDir   = location where output (plots) files will be written. End with /
@@ -38,13 +39,6 @@ MacOFDir <-  DP1
 MacSource <- SP1
 
 WinSource <- SP3
-    #  Load data file ONLY if not following previous script
-#DF3 <-  "HOBE_32.9375_-85.6875_PptTminTmax_IntermediateFiles.RData"
-#DF1 <- "CHOH-CU_39.6875_-78.8125_PRISM_PptTminTmax_IntermediateFiles.RData"
-#DF2 <- "CHOH-GF_38.9375_-77.3125_PRISM_PptTminTmax_IntermediateFiles.RData"
-#DF3 <- "CHOH-HF_39.3125_-77.6875_PRISM_PptTminTmax_IntermediateFiles.RData"
-DF1 <- "WHSA_32.8125_-106.3125_PRISM_PptTminTmax_IntermediateFiles.RData"
-RDataFile <- DF1
 
 beginRefYr = 1900
 endRefYr = 1970
