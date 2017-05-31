@@ -21,9 +21,6 @@ rm(list=ls())
 # OFDir   = location where output (plots) files will be written. End with /
 # Source  = location of twoPolys_function.R file
 
-#WinDataDir <- "D:/CHOH RSS/Figs PRISM"
-
-#WinOFDir <- "D:/CHOH RSS/Figs PRISM"
 WinDataDir <- "~/RSS Plots/BIBE/Figs PRISM"
 WinOFDir <- "~/RSS Plots/BIBE/Figs PRISM"
 
