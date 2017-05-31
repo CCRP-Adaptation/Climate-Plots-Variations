@@ -24,6 +24,7 @@
 #setwd(WD_plots)
 library(ggplot2)
 library(plyr)
+library(reshape2)
 
 rm(list=ls())
 #setwd("/Volumes/Seagate1_Blue2TB/COLM RSS/Figs/")
@@ -257,14 +258,7 @@ ggplot(TUColdTempmean, aes(x=CF,y=MeanUnderColdTemp,fill=CF)) +
         axis.title.y=element_text(size=18,vjust=0.8),
         plot.title=element_text(size=18,face="bold",vjust=2)) +
     #  coord_cartesian(ylim=c(30, 65)) +
-  labs(list(title = paste(
-        
-        
-        
-        
-        
-        
-        , " - Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
+  labs(list(title = paste(SiteID, " - Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
