@@ -23,20 +23,11 @@ rm(list=ls())
 #############################  Initials  ###################################################
     ####Input to select grid cell, year of interest, and range over which to compute statistics
 
-          # Data root directory
-# WD = "~johng/CMIP5_BOR/HOBE" 
-# WD =  "~Johng/CMIP5_BOR/CHOH_East" 
-# WD =  "~Johng/CMIP5_BOR/EJemez"
+          # Data root directory - Should contain CMIP5 1_8obs and bcca5 folders
 WD = "~/RSS Plots/CMIP5_BOR/RMNP/"
 
-# WD <- "/Volumes/Seagate1_Blue2TB/CMIP5/CHOH_East"
-
       # where to write figures, tables, data
-#WDP <- c("/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs", "D:/Projects/RSS Climate/CHOH/Figs/", 
-        # "D:/CHOH RSS/Figs/", "~johng/CMIP5_BOR/HOBE/Scratch","/Volumes/Seagate1_Blue2TB/COLM RSS/Figs", 
-        # "~johng/CMIP5_BOR/EJemez/Figs")
-
-WDP<-"C:/Users/arcarlson/Documents/RSS Plots/CMIP5_BOR/RMNP/Figs"
+WDP<-"~/RSS Plots/RMNP/Figs CMIP5"
 
 dir.create(WDP)         # create if necessary; see warning if it exists
 WD_plots <- WDP         #select from WDP list
