@@ -58,7 +58,7 @@ dataEndYr = 2015   # needed for rolling mean plot below.
 stepYrs	= 10		  # for period plots 
 rollLen = 10      # period of calc for rolling average; default 10 = decadal
 
-dpi = 125         # 125 works except or multi-panel box plots; greater resolution (e.g. 200 or 300) makes text & lines too thin
+dpi = 600         # 125 works except or multi-panel box plots; greater resolution (e.g. 200 or 300) makes text & lines too thin
 
 #################   End of Initials  ##########################  
 
