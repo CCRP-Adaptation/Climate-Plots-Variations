@@ -26,7 +26,7 @@ SiteCoords = list(c(44.6875, -104.8125), c(44.5625, -104.6875), c(44.4375, -104.
 SiteNames = c("X1", "X2", "X3")
 
 #Select GCMs
-GCMs = c("canesm2.3", "gfdl-esm2m.1", "csiro-mk3-6-0.7")
+GCMs = c("canesm2.3", "gfdl-esm2m.1", "csiro-mk3-6-0.7")  #do not include RCP in GCM name
 RCPs = c("rcp45", "rcp85")   
 
 HistBeginYr = 1950
