@@ -19,7 +19,7 @@ SiteCoords = list(c(44.5625, -104.6875))
 SiteNames = c("DETO")
 
 #Select GCMs
-GCMs = c("access1-0.1.rcp85", "bcc-csm1-1.1.rcp85", "miroc-esm-chem.1.rcp85", "csiro-mk3-6-0.1.rcp45")  #Do not include rcp 
+GCMs = c("access1-0.1.rcp85", "bcc-csm1-1.1.rcp85", "miroc-esm-chem.1.rcp85", "csiro-mk3-6-0.1.rcp45")  #Include RCP
 
 HistBeginYr = 1950
 HistEndYr =  1999	 
