@@ -12,14 +12,14 @@ rm(list=ls())
 #############################  Initials  ###################################################
 ####Input to select grid cell, year of interest, and range over which to compute statistics
 
-SiteID <- "DETO"  # identifier.  Use "" if not desired 
+SiteID <- "HAFE"  # identifier.  Use "" if not desired 
 
 # use center coordinate ONLY: .0625, .1875, .3125, .4375, .5625, .6875, .8125, .9375
-SiteCoords = list(c(44.5625, -104.6875))
-SiteNames = c("DETO")
+SiteCoords = list(c(39.3125, -77.6875))
+SiteNames = c("HAFE")
 
 #Select GCMs
-GCMs = c("access1-0.1.rcp85", "bcc-csm1-1.1.rcp85", "miroc-esm-chem.1.rcp85", "csiro-mk3-6-0.1.rcp45")  #Include RCP
+GCMs = c("access1-0.1.rcp85", "bcc-csm1-1.1.rcp85", "miroc-esm-chem.1.rcp85", "csiro-mk3-6-0.1.rcp45")  #Do not include rcp 
 
 HistBeginYr = 1950
 HistEndYr =  1999	 
