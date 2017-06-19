@@ -5,13 +5,6 @@
 # Generates projected time series of monthly mean Tmin, Tmax, and Ppt from desired GCMs
 # Loops through sites and generates an output table, formatted to be input into water balance model PRISM_batch script. Can be combined with historical PRISM series.
 
-library(RColorBrewer)
-library(ggplot2)
-library(ggmap)
-library(matrixStats)
-library(reshape)
-library(plyr)
-library(WriteXLS)
 library(ncdf4)
 
 rm(list=ls())
@@ -22,12 +15,11 @@ rm(list=ls())
 SiteID <- "DETO"  # identifier.  Use "" if not desired 
 
 # use center coordinate ONLY: .0625, .1875, .3125, .4375, .5625, .6875, .8125, .9375
-SiteCoords = list(c(44.6875, -104.8125), c(44.5625, -104.6875), c(44.4375, -104.5625))
-SiteNames = c("X1", "X2", "X3")
+SiteCoords = list(c(44.5625, -104.6875))
+SiteNames = c("DETO")
 
 #Select GCMs
-GCMs = c("canesm2.3", "gfdl-esm2m.1", "csiro-mk3-6-0.7")  #do not include RCP in GCM name
-RCPs = c("rcp45", "rcp85")   
+GCMs = c("access1-0.1.rcp85", "bcc-csm1-1.1.rcp85", "miroc-esm-chem.1.rcp85", "csiro-mk3-6-0.1.rcp45")  #Do not include rcp 
 
 HistBeginYr = 1950
 HistEndYr =  1999	 
@@ -88,14 +80,14 @@ for(i in 1:length(SiteNames)){
   Lat_index = as.numeric(which(All_lat$Extraction_Pr.dim.lat.vals == Lat))   # Get desired grid point coordinates
   Lon_index = as.numeric(which(All_lon$Extraction_Pr.dim.lon.vals == cLon))
 
-  All_Precip_Hist = (ncvar_get(Extraction_Pr, Extraction_Pr$var[[1]]))    # Array with all precip data for all cells
+  All_Precip_Hist = ncvar_get(Extraction_Pr, Extraction_Pr$var[[1]])    # Array with all precip data for all cells
   #    Extract precip values for desired grid cell, Add date and customary unit columns
   Precip_Hist = data.frame(Date = as.Date(t, origin = "1950-1-1"), Precip = All_Precip_Hist[Lon_index,Lat_index, ])
 
-  All_Tmax_Hist = (ncvar_get(Extraction_Tmax, Extraction_Tmax$var[[1]]))
+  All_Tmax_Hist = ncvar_get(Extraction_Tmax, Extraction_Tmax$var[[1]])
   Tmax_Hist = data.frame(Date = as.Date(t, origin = "1950-1-1"), Tmax = All_Tmax_Hist[Lon_index,Lat_index, ])
 
-  All_Tmin_Hist = (ncvar_get(Extraction_Tmin, Extraction_Tmin$var[[1]]))   #  array with all precip data for all cells
+  All_Tmin_Hist = ncvar_get(Extraction_Tmin, Extraction_Tmin$var[[1]])   #  array with all precip data for all cells
   Tmin_Hist = data.frame(Date = as.Date(t, origin = "1950-1-1"), Tmin = All_Tmin_Hist[Lon_index,Lat_index, ])
 
   #     Create Master Historical Data Frame.
@@ -132,7 +124,8 @@ getProjs <- function(ncObject){     # return vector of projection names as chara
   ps <- ncatt_get(ncObject, varid=0, attname='Projections')
   projs <- data.frame((strsplit(ps[[2]], ", ")))
   projs <- as.character(projs[,1])
-  return(projs)}
+  return(projs)
+}
 
 #  Format YrMon values for data range
 Months = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
@@ -171,62 +164,56 @@ DailyDF$YrMon = as.numeric(paste(strftime(DailyDF$Date, "%Y"), strftime(DailyDF$
 # Loop through selected GCMs
 for(i in 1:length(GCMs)){
   GCM <- GCMs[i]
-  # Loop through selected RCPs
-  for(i in 1:length(RCPs)){
-    RCP <- RCPs[i]
-    # Use the index value for selected climate model to extract layer from .ncdf file
-    ModelIndex <- which(allGCMs == paste(GCM, RCP, sep="."))
+  ModelIndex <- which(allGCMs == GCM)
+  
+  #Monthly output table
+  Future_tmin = data.frame(YrMon = YrMon)
+  Future_tmax = data.frame(YrMon = YrMon)
+  Future_ppt = data.frame(YrMon = YrMon)
+  
+  # Extract data for each site  
+  for(i in 1:length(SiteNames)){
+    # Select the desired grid cell
+    Lat = SiteCoords[[i]][1]
+    Lon = SiteCoords[[i]][2]
+    SiteName = SiteNames[i]
+    cLon <- Lon
+    if(Lon < 0){if(min(All_lon[1]) > 0 )cLon <- 360 + Lon}
+    Lat_index = as.numeric(which(All_lat$Extraction_Tmin.dim.lat.vals == Lat))   # Get desired grid point coordinates
+    Lon_index = as.numeric(which(All_lon$Extraction_Tmin.dim.lon.vals == cLon))
+    
+    # Extract data for GCM and create data frame
+    Tmin_vals = ncvar_get(Extraction_Tmin, start=c(Lon_index,Lat_index,1,ModelIndex), count=c(1,1,-1,1))   # -1 = all 
+    Future_tmin_daily = cbind(DailyDF, Tmin_vals)
+    Tmax_vals = ncvar_get(Extraction_Tmax, start=c(Lon_index,Lat_index,1,ModelIndex), count=c(1,1,-1,1)) 
+    Future_tmax_daily = cbind(DailyDF, Tmax_vals)
+    Ppt_vals = ncvar_get(Extraction_Pr, start=c(Lon_index,Lat_index,1,ModelIndex), count=c(1,1,-1,1))
+    Future_ppt_daily = cbind(DailyDF, Ppt_vals)
+    
+    # Convert to monthly values
+    Future_tmin_monthly = aggregate(Tmin_vals ~ YrMon, Future_tmin_daily, FUN = mean)
+    Future_tmax_monthly = aggregate(Tmax_vals ~ YrMon, Future_tmax_daily, FUN = mean)
+    Future_ppt_monthly = aggregate(Ppt_vals ~ YrMon, Future_ppt_daily, FUN = sum)
+    
+    # Add data series to output table
+    Future_tmin = merge(Future_tmin, Future_tmin_monthly, by="YrMon")
+    Future_tmax = merge(Future_tmax, Future_tmax_monthly, by="YrMon")
+    Future_ppt = merge(Future_ppt, Future_ppt_monthly, by="YrMon")
+    names(Future_tmin)[i+1] = SiteName
+    names(Future_tmax)[i+1] = SiteName
+    names(Future_ppt)[i+1] = SiteName
 
-    #Monthly output table
-    Future_tmin = data.frame(YrMon = YrMon)
-    Future_tmax = data.frame(YrMon = YrMon)
-    Future_ppt = data.frame(YrMon = YrMon)
-    
-    # Extract data for each site  
-    for(i in 1:length(SiteNames)){
-      # Select the desired grid cell
-      Lat = SiteCoords[[i]][1]
-      Lon = SiteCoords[[i]][2]
-      SiteName = SiteNames[i]
-      cLon <- Lon
-      if(Lon < 0){if(min(All_lon[1]) > 0 )cLon <- 360 + Lon}
-      Lat_index = as.numeric(which(All_lat$Extraction_Tmin.dim.lat.vals == Lat))   # Get desired grid point coordinates
-      Lon_index = as.numeric(which(All_lon$Extraction_Tmin.dim.lon.vals == cLon))
-      
-      # Extract data for GCM and create data frame
-      Tmin_vals = ncvar_get(Extraction_Tmin, start=c(Lon_index,Lat_index,1,ModelIndex), count=c(1,1,-1,1))   # -1 = all 
-      Future_tmin_daily = cbind(DailyDF, Tmin_vals)
-      Tmax_vals = ncvar_get(Extraction_Tmax, start=c(Lon_index,Lat_index,1,ModelIndex), count=c(1,1,-1,1)) 
-      Future_tmax_daily = cbind(DailyDF, Tmax_vals)
-      Ppt_vals = ncvar_get(Extraction_Pr, start=c(Lon_index,Lat_index,1,ModelIndex), count=c(1,1,-1,1))
-      Future_ppt_daily = cbind(DailyDF, Ppt_vals)
-      
-      # Convert to monthly values
-      Future_tmin_monthly = aggregate(Tmin_vals ~ YrMon, Future_tmin_daily, FUN = mean)
-      Future_tmax_monthly = aggregate(Tmax_vals ~ YrMon, Future_tmax_daily, FUN = mean)
-      Future_ppt_monthly = aggregate(Ppt_vals ~ YrMon, Future_ppt_daily, FUN = sum)
-      
-      # Add data series to output table
-      Future_tmin = merge(Future_tmin, Future_tmin_monthly, by="YrMon")
-      Future_tmax = merge(Future_tmax, Future_tmax_monthly, by="YrMon")
-      Future_ppt = merge(Future_ppt, Future_ppt_monthly, by="YrMon")
-      names(Future_tmin)[i+1] = SiteName
-      names(Future_tmax)[i+1] = SiteName
-      names(Future_ppt)[i+1] = SiteName
-    }
-    
     # Combine with historic data
     Tmin = rbind(Historic_tmin, Future_tmin)
     Tmax = rbind(Historic_tmax, Future_tmax)
     Ppt = rbind(Historic_ppt, Future_ppt)
     
     # Save output files
-    ModelName = paste(GCM, "_", RCP, sep="")
-    dir.create(ModelName)
-    setwd(ModelName)
-    write.csv(Tmin, "tmin.csv")
-    write.csv(Tmax, "tmax.csv")
-    write.csv(Ppt, "ppt.csv")
+    dir.create(GCM)
+    setwd(GCM)
+    write.csv(Tmin, "tmin.csv", row.names=FALSE)
+    write.csv(Tmax, "tmax.csv", row.names=FALSE)
+    write.csv(Ppt, "ppt.csv", row.names=FALSE)
     setwd("..")
   }
 }
