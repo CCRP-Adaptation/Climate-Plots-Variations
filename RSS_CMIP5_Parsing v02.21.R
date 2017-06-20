@@ -189,6 +189,8 @@ Precip$Date =strptime(Precip$Date, "%Y-%m-%d")
 
 Historical_all$Date=strptime(Historical_all$Date, "%Y-%m-%d")
 months=factor(c("January","February","March","April","May","June","July","August","September","October","November","December"),levels = month.name)
+seasons=factor(c("Winter", "Spring", "Summer", "Fall"))
+levels(seasons)=seasons
 
 #subset climate variables for selected future year range, centered on the selected year
 YearRange=((Year-(Range/2)):(Year+(Range/2))) 
