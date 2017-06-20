@@ -27,7 +27,7 @@ Historical_all$season=getSeason(Historical_all$Date)
 #### Create tables with monthly tmax/tmin delta by CF
 Monthly_Tmax_delta = data.frame(months,Tmax_delta=with(Future_all, tapply(TmaxCustom, list(Date$mon, CF), mean))-
                                   with(Baseline_all, tapply(TmaxCustom, list(Date$mon, CF), mean)))
-Monthly_Tmax_delta = melt(Monthly_Tmax_delta)
+Monthly_Tmax_delta = melt(Monthly_Tmax_delta, id="months")
 names(Monthly_Tmax_delta) = c("month","CF","Tmax") 
 Monthly_Tmax_delta$CF = factor(Monthly_Tmax_delta$CF, 
                                levels = c("Tmax_delta.Warm.Wet", "Tmax_delta.Hot.Wet", "Tmax_delta.Central", "Tmax_delta.Warm.Dry", "Tmax_delta.Hot.Dry"), 
@@ -35,7 +35,7 @@ Monthly_Tmax_delta$CF = factor(Monthly_Tmax_delta$CF,
 
 Monthly_Tmin_delta = data.frame(months,Tmin_delta=with(Future_all, tapply(TminCustom, list(Date$mon, CF), mean))-
                                   with(Baseline_all, tapply(TminCustom, list(Date$mon, CF), mean)))
-Monthly_Tmin_delta = melt(Monthly_Tmin_delta)
+Monthly_Tmin_delta = melt(Monthly_Tmin_delta, id="months")
 names(Monthly_Tmin_delta) = c("month","CF","Tmin") 
 Monthly_Tmin_delta$CF = factor(Monthly_Tmin_delta$CF, 
                                levels = c("Tmin_delta.Warm.Wet", "Tmin_delta.Hot.Wet", "Tmin_delta.Central", "Tmin_delta.Warm.Dry", "Tmin_delta.Hot.Dry"), 
@@ -45,7 +45,7 @@ Monthly_Tmin_delta$CF = factor(Monthly_Tmin_delta$CF,
 #### Create table with monthly precip delta by CF
 Monthly_Precip_delta = data.frame(months,Precip_delta=with(Future_all, tapply(PrecipCustom, list(Date$mon, CF), mean))-
                                     with(Baseline_all, tapply(PrecipCustom, list(Date$mon, CF), mean)))
-Monthly_Precip_delta = melt(Monthly_Precip_delta)
+Monthly_Precip_delta = melt(Monthly_Precip_delta, id="months")
 names(Monthly_Precip_delta) = c("month","CF","Precip")
 Monthly_Precip_delta$CF = factor(Monthly_Precip_delta$CF, 
                                  levels = c("Precip_delta.Warm.Wet", "Precip_delta.Hot.Wet", "Precip_delta.Central", "Precip_delta.Warm.Dry", "Precip_delta.Hot.Dry"), 
@@ -56,7 +56,7 @@ Seasonal_Precip_delta = data.frame(Precip_delta=with(Future_all, tapply(PrecipCu
                                     with(Baseline_all, tapply(PrecipCustom, list(season, CF), mean)))
 Seasonal_Precip_delta = Seasonal_Precip_delta[match(seasons, row.names(Seasonal_Precip_delta)),]
 Seasonal_Precip_delta$season = seasons
-Seasonal_Precip_delta = melt(Seasonal_Precip_delta)
+Seasonal_Precip_delta = melt(Seasonal_Precip_delta, id="season")
 names(Seasonal_Precip_delta) = c("Season","CF","Precip")
 Seasonal_Precip_delta$CF = factor(Seasonal_Precip_delta$CF, 
                                  levels = c("Precip_delta.Warm.Wet", "Precip_delta.Hot.Wet", "Precip_delta.Central", "Precip_delta.Warm.Dry", "Precip_delta.Hot.Dry"), 
@@ -218,7 +218,7 @@ DroughtMaxSeasons_Hist = data.frame(Winter = mean(DroughtSeasons_Hist$Winter),
                                     Summer = mean(DroughtSeasons_Hist$Summer), 
                                     Fall = mean(DroughtSeasons_Hist$Fall))
 
-DroughtMaxSeasons_Hist_melt = melt(DroughtMaxSeasons_Hist)
+DroughtMaxSeasons_Hist_melt = melt(DroughtMaxSeasons_Hist, id=NULL)
 DroughtMaxSeasons_Hist_melt$Season<-DroughtMaxSeasons_Hist_melt$variable
 
 ##### Future/Baseline No Precip
@@ -311,7 +311,7 @@ DroughtSeasons_future = DroughtSeasons_future[keeps]
 # Combine baseline and future drought (max consec zero precip days) dfs for boxplotting
 DroughtSeasons=data.frame(rbind(DroughtSeasons_baseline,DroughtSeasons_future))
 names(DroughtSeasons) = c("CF", "Winter", "Spring", "Summer", "Fall", "timeframe")
-DroughtSeasons=melt(DroughtSeasons)
+DroughtSeasons=melt(DroughtSeasons, id=list("CF","timeframe"))
 names(DroughtSeasons)=c("CF","Timeframe","Season","DroughtMax")
 
 #### Remove extra data frames
