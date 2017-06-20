@@ -1,5 +1,6 @@
 # RSS_Plotting vxx.R
 
+# v01.4 Fixed missing line plots for Avg_Monthly_Tmin_Delta and Avg_Monthly_Tmax_Delta by removing fill parameter on geom_line. Line color is already specified by aes(colour=CF)
 # v01.3 Added GCM scatter w/ GCMs labelled. Revised plot titles to read Year.
 # v01.2 Added a scatter w/o box, darker/larger axis labels
 # v01.1 STABLE 22 Oct 2016 - added plots for below cold. Ref lines fixed. Scales OK, SiteID to plot titles & file names
@@ -7,11 +8,11 @@
 #                 - in 4-panel drought plot, all ref lines show on all plots (needs fixing)
 
 # setwd("/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs CMIP5")
-# load("CHOH-HF_39.3125_-77.6875_Final_Environment.RData")
 
-setwd(WD_plots)
+setwd("~/RSS Plots/HAFE/Figs CMIP5")
+load("HAFE_39.3125_-77.5625_Final_Environment.RData")
 
-###Scatter plot showing delta precip and tavg, color by emissions scenario
+###Scatter plot showing delta precip and tavg, color by emissions scenario, with box for central CF
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
 scatter + geom_point(aes(color=emissions),size=4) + 
   theme(axis.text=element_text(size=20),
@@ -19,7 +20,7 @@ scatter + geom_point(aes(color=emissions),size=4) +
         axis.title.y=element_text(size=20,vjust=0.2),
         plot.title=element_text(size=24,face="bold",vjust=2),
         legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
-  labs(list(title = paste(SiteID, " - Changes in climate means in", Year,"by GCM run"), 
+  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
             y = "Change in average annual precipitation (in)")) +
   scale_colour_manual(values=c("blue", "red"))+
@@ -31,6 +32,28 @@ scatter + geom_point(aes(color=emissions),size=4) +
 
 ggsave(sprintf("%s_%s_%s_GCM_Scatter_Plot.png", SiteID, Lat, Lon), width = 15, height = 9)
 
+###Scatter plot showing delta precip and tavg, color by emissions scenario, with box for all 3 CF's
+scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr))
+scatter + geom_point(aes(color=emissions),size=4) + 
+  theme(axis.text=element_text(size=20),
+        axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.2),
+        plot.title=element_text(size=24,face="bold",vjust=2),
+        legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
+  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
+            x = "Change in annual average temperature (F)", 
+            y = "Change in average annual precipitation (in)")) +
+  scale_colour_manual(values=c("blue", "red"))+
+  guides(color=guide_legend(title="Emissions\nScenarios\n")) +
+  geom_rect(xmin=Tavg, xmax=Tavg100, ymin=365*PrAvg, ymax=365*Pr100, color = "red", alpha=0) + 
+  geom_rect(xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75, color = "yellow", alpha=0) +
+  geom_rect(xmin=Tavg0, xmax=Tavg, ymin=365*Pr0, ymax=365*PrAvg, color = "blue", alpha=0) +
+  geom_hline(aes(yintercept=365*mean(Future_Means$DeltaPr)),linetype=2) + 
+  geom_vline(aes(xintercept=mean(Future_Means$DeltaTavg)),linetype=2)  
+#scale_y_continuous(limits=c(-3.75,3.75))
+
+ggsave(sprintf("%s_%s_%s_GCM_Scatter_Plot_3CFs.png", SiteID, Lat, Lon), width = 15, height = 9)
+
 ###Scatter plot showing delta precip and tavg, color by emissions scenario, x-axis scaled 0-max
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
 scatter + geom_point(aes(color=emissions),size=4) + 
@@ -39,7 +62,7 @@ scatter + geom_point(aes(color=emissions),size=4) +
         axis.title.y=element_text(size=20,vjust=0.2),
         plot.title=element_text(size=24,face="bold",vjust=2),
         legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
-  labs(list(title = paste(SiteID, " - Changes in climate means in", Year,"by GCM run"), 
+  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
             y = "Change in average annual precipitation (in)")) +
   scale_colour_manual(values=c("blue", "red"))+
@@ -57,7 +80,7 @@ ggsave(sprintf("%s_%s_%s_GCM_Scatter_noBox_Plot.png", SiteID, Lat, Lon), width =
 png(filename = sprintf("%s_%s_%s_GCM_Scatter_8.5-4.5 w GCM labels.png", SiteID, Lat, Lon), width = 1280, height = 1280)
 
 plot(Future_Means$DeltaTavg, 365*Future_Means$DeltaPr, pch=20, main=paste("RCP 4.5 & 8.5", Year), 
-            xlab="Delta T Avg", ylab="Delta Precip (in/yr)", cex.axis=1.5, cex.lab=1.5)
+            xlab="Delta T Avg", ylab="Delta Prcip (in/yr)", cex.axis=1.5, cex.lab=1.5)
 text(365*DeltaPr ~ DeltaTavg,data=Future_Means,subset = emissions == "RCP 4.5", col="blue",
       labels=Future_Means$GCM, pos=3, cex=1.5)
 text(365*DeltaPr ~ DeltaTavg,data=Future_Means, subset = emissions == "RCP 8.5", col="red",
@@ -66,28 +89,40 @@ dev.off()
 
 png(filename = sprintf("%s_%s_%s_GCM_Scatter_4.5 w GCM labels.png", SiteID, Lat, Lon), width = 1280, height = 1280)
 plot(365*DeltaPr ~ DeltaTavg, data=Future_Means, subset = emissions == "RCP 4.5", pch=20, main= paste("RCP 4.5", Year), 
-     xlab="Delta T Avg", ylab="Delta Precip (in/yr)", cex.axis=1.5, cex.lab=1.5)
+     xlab="Delta T Avg", ylab="Delta Prcip (in/yr)", cex.axis=1.5, cex.lab=1.5)
 text(365*DeltaPr ~ DeltaTavg, data=Future_Means, subset = emissions == "RCP 4.5", label=GCM, pos=3, cex=1.5, col="blue")
 dev.off()
 
 png(filename = sprintf("%s_%s_%s_GCM_Scatter_8.5 w GCM labels.png", SiteID, Lat, Lon), width = 1280, height = 1280)
 plot(365*DeltaPr ~ DeltaTavg, data=Future_Means, subset = emissions == "RCP 8.5",
-     pch=20, main=paste("RCP 8.5", Year), xlab="Delta T Avg", ylab="Delta Precip (in/yr)", cex.axis=1.5, cex.lab=1.5)
+     pch=20, main=paste("RCP 8.5", Year), xlab="Delta T Avg", ylab="Delta Prcip (in/yr)", cex.axis=1.5, cex.lab=1.5)
 text(365*DeltaPr ~ DeltaTavg, data=Future_Means, subset = emissions == "RCP 8.5", label=GCM, pos=3, cex=1.5, col="red")
 dev.off()
 
 
-#Bar graph of precip by CF
+#Bar graph of monthly precip by CF
 ggplot(Monthly_Precip_delta, aes(x=month,y=30*Precip,fill=CF)) +
 geom_bar(stat="identity",position="dodge") +
 theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
       axis.title.y=element_text(size=20,vjust=0.2),
       plot.title=element_text(size=24,face="bold",vjust=2)) +
-labs(list(title = paste(SiteID, " - Change in average monthly precipitation in", Year,"vs 1950-1999"), 
+labs(list(title = paste(SiteID, "- Change in average monthly precipitation in", Year,"vs 1950-1999"), 
           x = "Month", y = "Change in Precipitation (in)")) +
 scale_fill_manual(name="Climate Future",values = rev(brewer.pal(5,"Spectral")))
 
 ggsave(sprintf("%s_%s_%s_Avg_Monthly_Precip_Delta_Bar.png", SiteID, Lat, Lon), width = 15, height = 9)
+
+#Bar graph of seasonal precip by CF
+ggplot(Seasonal_Precip_delta, aes(x=Season,y=30*Precip,fill=CF)) +
+  geom_bar(stat="identity",position="dodge") +
+  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.2),
+        plot.title=element_text(size=24,face="bold",vjust=2)) +
+  labs(list(title = paste(SiteID, "- Change in average monthly precipitation in", Year,"vs 1950-1999"), 
+            x = "Season", y = "Change in Precipitation (in)")) +
+  scale_fill_manual(name="Climate Future",values = rev(brewer.pal(5,"Spectral")))
+
+ggsave(sprintf("%s_%s_%s_Avg_Seasonal_Precip_Delta_Bar.png", SiteID, Lat, Lon), width = 15, height = 9)
 
 
 #Line plot of change in MaxTemp by CF/month
@@ -97,7 +132,7 @@ ggplot(Monthly_Tmax_delta, aes(x=month, y=Tmax, group=CF, colour = CF)) +
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.2),
         plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(list(title = paste(SiteID, " - Change in average daily maximum temperature in", Year,"vs 1950-1999"), 
+  labs(list(title = paste(SiteID, "- Change in average daily maximum temperature in", Year,"vs 1950-1999"), 
             x = "Month", y = "Degrees F")) +
   scale_color_manual(name="Climate Future",values = rev(brewer.pal(5,"Spectral"))) +
   scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmax_delta$Tmax))))
@@ -113,7 +148,7 @@ ggplot(Monthly_Tmin_delta, aes(x=month, y=Tmin, group=CF, colour = CF)) +
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.2),
         plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(list(title = paste(SiteID, " - Change in average daily minimum temperature in", Year,"vs 1950-1999"),
+  labs(list(title = paste(SiteID, "- Change in average daily minimum temperature in", Year,"vs 1950-1999"),
             x = "Month", y = "Degrees F")) +
   scale_color_manual(name="Climate Future",values = rev(brewer.pal(5,"Spectral"))) +
   scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmin_delta$Tmin))))
@@ -121,7 +156,7 @@ ggplot(Monthly_Tmin_delta, aes(x=month, y=Tmin, group=CF, colour = CF)) +
 ggsave(sprintf("%s_%s_%s_Avg_Monthly_Tmin_Delta_Line.png", SiteID, Lat, Lon), width = 15, height = 9)
 
 
-#Box plot of precip, aggregated
+#Box plot of precip, aggregated by month
 ggplot(Monthly_Precip_delta, aes(x=month,y=Precip*30)) +
 geom_boxplot(fill="lightblue") + 
   theme(axis.text=element_text(size=14),
@@ -130,10 +165,24 @@ geom_boxplot(fill="lightblue") +
         plot.title=element_text(size=18,face="bold",vjust=2)) +
   # scale_y_continuous(limits=c(-0.4, 0.4)) +
   geom_hline(aes(yintercept=0)) +
-  labs(list(title = paste(SiteID, " - Change in average monthly precipitation in", Year,"vs 1950-1999"), 
+  labs(list(title = paste(SiteID, "- Change in average monthly precipitation in", Year,"vs 1950-1999"), 
             x = "Month", y = "Change in Precipitation (in)", colour = "Climate Future")) 
 
 ggsave(sprintf("%s_%s_%s_Delta_Precip_by_CF_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
+
+#Box plot of precip, aggregated by season
+ggplot(Seasonal_Precip_delta, aes(x=Season,y=Precip*30)) +
+  geom_boxplot(fill="lightblue") + 
+  theme(axis.text=element_text(size=14),
+        axis.title.x=element_text(size=16,vjust=-0.2)
+        ,axis.title.y=element_text(size=16,vjust=0.2),
+        plot.title=element_text(size=18,face="bold",vjust=2)) +
+  # scale_y_continuous(limits=c(-0.4, 0.4)) +
+  geom_hline(aes(yintercept=0)) +
+  labs(list(title = paste(SiteID, "- Change in average monthly precipitation in", Year,"vs 1950-1999"), 
+            x = "Month", y = "Change in Precipitation (in)", colour = "Climate Future")) 
+
+ggsave(sprintf("%s_%s_%s_Delta_Precip_by_CF_by_Season_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
 
 
 #Box plot of temp, aggregated
@@ -144,7 +193,7 @@ geom_boxplot(fill="orange") +
         axis.title.y=element_text(size=16,vjust=0.2),
         plot.title=element_text(size=18,face="bold",vjust=2)) +
  # scale_y_continuous(limits=c(0, 6)) +
-labs(list(title = paste(SiteID, " - Change in average daily maximum temperature in", Year),
+labs(list(title = paste(SiteID, "- Change in average daily maximum temperature in", Year),
           x = "Month", y = "Average Daily Maximum Temperature (F)", colour = "Climate Future")) 
 
 ggsave(sprintf("%s_%s_%s_Avg_Monthly_Tmax_Delta_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
@@ -176,7 +225,7 @@ ggplot(subset(HeatMax, timeframe == "Future", select=c("CF", "Adjusted")), aes(x
         plot.title=element_text(size=18,face="bold",vjust=2)) +
   #scale_y_continuous(limits=c(0, 30)) +
   geom_hline(aes(yintercept=HeatMaxHist), size = 1) +
-  labs(list(title = paste(SiteID, " - Max Consecutive", HotTemp, "Degree Days in Historical (1950-1999) vs Future (2025-2055)"), 
+  labs(list(title = paste(SiteID, "Max Consecutive", HotTemp, "Degree Days in Historical (1950-1999) vs Future (2025-2055)"), 
             x = "Climate Future", y = paste("Days Over", HotTemp,"F"), colour = "Climate Future")) 
 
 ggsave(sprintf("%s_%s_%s_Consec_Days_Over_HotTemp_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
@@ -208,7 +257,7 @@ ggplot(subset(ColdMax, timeframe == "Future", select=c("CF", "Adjusted")), aes(x
         plot.title=element_text(size=18,face="bold",vjust=2)) +
   #scale_y_continuous(limits=c(0, 30)) +
   geom_hline(aes(yintercept=ColdMaxHist), size = 1) +
-  labs(list(title = paste(SiteID, " - Max Consecutive Days Below ", ColdTemp, " F in Historical (1950-1999) vs", Year), 
+  labs(list(title = paste(SiteID, "Max Consecutive Days Below ", ColdTemp, " F in Historical (1950-1999) vs", Year), 
             x = "Climate Future", y = paste("Days Belowr", ColdTemp,"F"), colour = "Climate Future")) 
 
 ggsave(sprintf("%s_%s_%s_Consec_Days_Below_Cold_Temp_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
@@ -224,7 +273,7 @@ ggplot(subset(DroughtMax, timeframe == "Future", select=c("CF", "Adjusted")), ae
         plot.title=element_text(size=18,face="bold",vjust=2)) +
  # scale_y_continuous(limits=c(20, 45)) +
   geom_hline(aes(yintercept=DroughtMax_Hist), size = 1, linetype = "dashed") +
-  labs(list(title = paste(SiteID, " - Max Drought Length in Historical (1950-1999) vs", Year),
+  labs(list(title = paste(SiteID, "- Max Drought Length in Historical (1950-1999) vs", Year),
             x = "Climate Future", y = "Drought Length (Days)", colour = "Climate Future")) 
 
 ggsave(sprintf("%s_%s_%s_Max_Drought_Length_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
@@ -239,7 +288,7 @@ ggplot(subset(DroughtSeasons, (Timeframe == "Future" & (Season == "Winter" |Seas
         axis.title.y=element_text(size=20,vjust=0.2),
         plot.title=element_text(size=24,face="bold",vjust=2),
         legend.text=element_text(size=20), legend.title=element_blank()) + 
-  labs(list(title = paste(SiteID, " - Max Drought Length in Historical (1950-1999) and", Year), 
+  labs(list(title = paste(SiteID, "- Max Drought Length in Historical (1950-1999) and", Year), 
             x = "Climate Future", y = "Days per year")) + 
   scale_fill_manual(values = c("tan", "tan4")) + 
   facet_wrap(~Season,ncol = 2) + geom_hline(data = DroughtMaxSeasons_Hist_melt, aes(yintercept = value), linetype = "dashed")  #scale_y_continuous(limits=c(0,35))
@@ -256,7 +305,7 @@ ggplot(subset(PrecipMax, timeframe == "Future", select=c("CF", "AdjustedMaxPreci
         plot.title=element_text(size=18,face="bold",vjust=2)) +
  # scale_y_continuous(limits=c(0.5, 1.5)) +
   geom_hline(aes(yintercept=PrecipMax_Hist), size = 1, show_guide = TRUE, linetype = "dashed") +
-  labs(list(title = paste(SiteID, " - Maximum 24-Hour Precipitation in Historical (1950-1999) vs", Year), 
+  labs(list(title = paste(SiteID, "- Maximum 24-Hour Precipitation in Historical (1950-1999) vs", Year), 
             x = "Climate Future", y = "Precipitation (in)", colour = "Climate Future")) 
 
 ggsave(sprintf("%s_%s_%s_Max_24hr_Precip_Box.png", SiteID, Lat, Lon), width = 15, height = 9)
