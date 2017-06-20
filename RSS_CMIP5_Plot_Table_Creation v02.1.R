@@ -2,6 +2,28 @@
 # v02.1 - added Future_Means to xlsx output.
 # v02 STABLE - 22 Oct 2015 - days below ColdTemp added and debugged.
 
+################################################### 'GET SEASON' FUNCTION ########################################
+
+getSeason <- function(DATES) {
+  WS <- as.Date("2012-12-21", format = "%Y-%m-%d") # Winter Solstice
+  SE <- as.Date("2012-3-21",  format = "%Y-%m-%d") # Spring Equinox
+  SS <- as.Date("2012-6-21",  format = "%Y-%m-%d") # Summer Solstice
+  FE <- as.Date("2012-9-21",  format = "%Y-%m-%d") # Fall Equinox
+  
+  # Convert dates from any year to 2012 dates
+  d <- as.Date(strftime(DATES, format="2012-%m-%d"))
+  
+  ifelse (d >= WS | d < SE, "Winter",
+          ifelse (d >= SE & d < SS, "Spring",
+                  ifelse (d >= SS & d < FE, "Summer", "Fall")))
+}
+###################################################################################################################
+
+#Add season variable for all data in Future_all and Baseline_all
+Future_all$season=getSeason(Future_all$Date)
+Baseline_all$season=getSeason(Baseline_all$Date)
+Historical_all$season=getSeason(Historical_all$Date)
+
 #### Create tables with monthly tmax/tmin delta by CF
 Monthly_Tmax_delta = data.frame(months,Tmax_delta=with(Future_all, tapply(TmaxCustom, list(Date$mon, CF), mean))-
                                   with(Baseline_all, tapply(TmaxCustom, list(Date$mon, CF), mean)))
@@ -26,6 +48,17 @@ Monthly_Precip_delta = data.frame(months,Precip_delta=with(Future_all, tapply(Pr
 Monthly_Precip_delta = melt(Monthly_Precip_delta)
 names(Monthly_Precip_delta) = c("month","CF","Precip")
 Monthly_Precip_delta$CF = factor(Monthly_Precip_delta$CF, 
+                                 levels = c("Precip_delta.Warm.Wet", "Precip_delta.Hot.Wet", "Precip_delta.Central", "Precip_delta.Warm.Dry", "Precip_delta.Hot.Dry"), 
+                                 labels=c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry"))
+
+### Create table with seasonal precip delta by CF
+Seasonal_Precip_delta = data.frame(Precip_delta=with(Future_all, tapply(PrecipCustom, list(season, CF), mean))-
+                                    with(Baseline_all, tapply(PrecipCustom, list(season, CF), mean)))
+Seasonal_Precip_delta = Seasonal_Precip_delta[match(seasons, row.names(Seasonal_Precip_delta)),]
+Seasonal_Precip_delta$season = seasons
+Seasonal_Precip_delta = melt(Seasonal_Precip_delta)
+names(Seasonal_Precip_delta) = c("Season","CF","Precip")
+Seasonal_Precip_delta$CF = factor(Seasonal_Precip_delta$CF, 
                                  levels = c("Precip_delta.Warm.Wet", "Precip_delta.Hot.Wet", "Precip_delta.Central", "Precip_delta.Warm.Dry", "Precip_delta.Hot.Dry"), 
                                  labels=c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry"))
 
@@ -165,28 +198,6 @@ ColdMax=data.frame(rbind(ColdMax_baseline,ColdMax_future))
 ####Remove extra data frames
 rm(HeatMax_baseline, HeatMax_delta, HeatMax_future)
 rm(ColdMax_baseline, ColdMax_delta, ColdMax_future)
-
-################################################### 'GET SEASON' FUNCTION ########################################
-
-getSeason <- function(DATES) {
-  WS <- as.Date("2012-12-21", format = "%Y-%m-%d") # Winter Solstice
-  SE <- as.Date("2012-3-21",  format = "%Y-%m-%d") # Spring Equinox
-  SS <- as.Date("2012-6-21",  format = "%Y-%m-%d") # Summer Solstice
-  FE <- as.Date("2012-9-21",  format = "%Y-%m-%d") # Fall Equinox
-  
-  # Convert dates from any year to 2012 dates
-  d <- as.Date(strftime(DATES, format="2012-%m-%d"))
-  
-  ifelse (d >= WS | d < SE, "Winter",
-          ifelse (d >= SE & d < SS, "Spring",
-                  ifelse (d >= SS & d < FE, "Summer", "Fall")))
-}
-###################################################################################################################
-
-#Add season variable for all data in Future_all and Baseline_all
-Future_all$season=getSeason(Future_all$Date)
-Baseline_all$season=getSeason(Baseline_all$Date)
-Historical_all$season=getSeason(Historical_all$Date)
 
 
 ###########Drought duration (aggregated over whole year)
