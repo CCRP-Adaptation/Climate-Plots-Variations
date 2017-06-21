@@ -199,6 +199,24 @@ ColdMax=data.frame(rbind(ColdMax_baseline,ColdMax_future))
 rm(HeatMax_baseline, HeatMax_delta, HeatMax_future)
 rm(ColdMax_baseline, ColdMax_delta, ColdMax_future)
 
+####Days with Tmin < historic 5th percentile and Tmax > historic 95th percentile
+Baseline5thPercentile = as.numeric(quantile(Baseline_all$TminCustom, 0.05))
+Baseline95thPercentile = as.numeric(quantile(Baseline_all$TmaxCustom, 0.95))
+
+Future_all$Under5th = Future_all$TminCustom < Baseline5thPercentile
+Future_all$Over95th = Future_all$TmaxCustom > Baseline95thPercentile
+
+FutureUnder5th = aggregate(Future_all$Under5th ~ Future_all$CF, Future_all, mean)
+names(FutureUnder5th) = c("CF", "PercDays")
+FutureUnder5th$CF = as.character(FutureUnder5th$CF)
+FutureUnder5th = rbind(FutureUnder5th, c("Historical", .05))
+FutureUnder5th$PercDays = as.numeric(FutureUnder5th$PercDays)
+
+FutureOver95th = aggregate(Future_all$Over95th ~ Future_all$CF, Future_all, mean)
+names(FutureOver95th) = c("CF", "PercDays")
+FutureOver95th$CF = as.character(FutureOver95th$CF)
+FutureOver95th = rbind(FutureOver95th, c("Historical", .05))
+FutureOver95th$PercDays = as.numeric(FutureOver95th$PercDays)
 
 ###########Drought duration (aggregated over whole year)
 
