@@ -68,6 +68,11 @@ TCOHotTemp3<-subset(HeatMax, CF %in% FutureSubset)
 TUColdTempH<-subset(TotalUnderColdTemp, timeframe == "Historical")
 TUColdTemp3<-subset(TotalUnderColdTemp, CF %in% FutureSubset& timeframe == "Future")
 
+TU5thPercentileH<-subset(FutureUnder5th, CF == "Historical")
+TU5thPercentile3<-subset(FutureUnder5th, CF %in% FutureSubset)
+
+TO95thPercentileH<-subset(FutureOver95th, CF == "Historical")
+TO95thPercentile3<-subset(FutureOver95th, CF %in% FutureSubset)
 
 ###############################################################working############################################
 
@@ -264,6 +269,36 @@ ggplot(TUColdTempmean, aes(x=CF,y=MeanUnderColdTemp,fill=CF)) +
 
 ggsave(paste(FilePre, "Days_Under_ColdTemp.png", sep=""), width = 15, height = 9)
 
+
+  #Create data frame for days/year under historic 5th percentile value
+TU5thPercentile = rbind(TU5thPercentileH, TU5thPercentile3)
+
+      # Bar graph of days/year with Tmin under historic 5th percentile value
+ggplot(TU5thPercentile, aes(x=CF, y=PercDays*365, fill=CF)) +
+  geom_bar(stat="identity", position="dodge") +
+  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.8),
+        plot.title=element_text(size=18,face="bold",vjust=2)) +
+  labs(list(title = paste(SiteID, "- Days/Yr with Tmin < Historic 5th Percentile (1950-1999) in ", Year),
+            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
+  scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
+
+ggsave(paste(FilePre, "Days_Under_5thPercentile.png", sep=""), width = 15, height = 9)
+
+  #Create data frame for days/year over historic 95th percentile value
+TO95thPercentile = rbind(TO95thPercentileH, TO95thPercentile3)
+
+      # Bar graph of days/year with Tmin under historic 5th percentile value
+ggplot(TO95thPercentile, aes(x=CF, y=PercDays*365, fill=CF)) +
+  geom_bar(stat="identity", position="dodge") +
+  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.8),
+        plot.title=element_text(size=18,face="bold",vjust=2)) +
+  labs(list(title = paste(SiteID, "- Days/Yr with Tmax > Historic 95th Percentile (1950-1999) in ", Year),
+            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
+  scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
+
+ggsave(paste(FilePre, "Days_Over_95thPercentile.png", sep=""), width = 15, height = 9)
 
     ###### Summary differences  ######
     ## Do these calcs only on subset files - non-subset files include historical data!!
