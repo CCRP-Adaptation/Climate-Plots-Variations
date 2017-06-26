@@ -21,21 +21,24 @@ SiteNames = c("DETO")
 #Select GCMs
 GCMs = c("access1-0.1.rcp85", "bcc-csm1-1.1.rcp85", "miroc-esm-chem.1.rcp85", "csiro-mk3-6-0.1.rcp45")  #Include RCP
 
+#Range of years for observed data
 HistBeginYr = 1950
 HistEndYr =  1999	 
 
+#Range of years for projected data (historical + projections should be a continuous series)
 PrjBeginYr = 2000
 PrjEndYr = 2099
 
 # CMIP5 data root directory
 WD = "~/RSS Plots/DETO/CMIP5"
 
-# where to write figures, tables, data
+# where to write output .csv's
 OutDir <- "~/WaterBalance/DETO/CMIP5/" #Include '/' at end
 
 ####################################################################################
 ############# PARSE Historical ################    
 
+#Directory for observed historical data
 ncDir <- paste(WD, "/1_8obs/", sep="")
 
 #### PRECIP #####
@@ -56,6 +59,7 @@ tUnits = ncatt_get(Extraction_Tmin, "time", "units")
 All_lat = data.frame(Extraction_Pr$dim$lat$vals)    #    All potential coordinates
 All_lon = data.frame(Extraction_Pr$dim$lon$vals)
 
+#Create series of year/month identifiers 
 Months = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
 Years = HistBeginYr:HistEndYr
 YrMon = c()
@@ -70,6 +74,7 @@ Historic_ppt = data.frame(YrMon = YrMon)
 Historic_tmax = data.frame(YrMon = YrMon)
 Historic_tmin = data.frame(YrMon = YrMon)
 
+#Loop through sites and create data columns with historical data series
 for(i in 1:length(SiteNames)){
   Lat = SiteCoords[[i]][1]
   Lon = SiteCoords[[i]][2]
@@ -94,16 +99,17 @@ for(i in 1:length(SiteNames)){
   Historical_all = merge(Precip_Hist, Tmax_Hist, by = c("Date"))
   Historical_all = merge(Historical_all, Tmin_Hist, by = c("Date"))
 
-  ####Order by date
+  #     Order by date
   Historical_all = Historical_all[order(Historical_all$Date), ]
   #Add YrMon column
   Historical_all$YrMon = paste(strftime(Historical_all$Date, "%Y"), strftime(Historical_all$Date, "%m"), sep="")
 
-  ##Mean monthly values
+  #     Mean monthly values
   Monthly_historic_ppt = aggregate(Precip ~ YrMon, Historical_all, FUN = sum)
   Monthly_historic_tmax = aggregate(Tmax ~ YrMon, Historical_all, FUN = mean)
   Monthly_historic_tmin = aggregate(Tmin ~ YrMon, Historical_all, FUN = mean)
 
+  #     Add site data to final output data frame
   Historic_ppt = cbind(Historic_ppt, Monthly_historic_ppt$Precip)
   Historic_tmax = cbind(Historic_tmax, Monthly_historic_tmax$Tmax)
   Historic_tmin = cbind(Historic_tmin, Monthly_historic_tmin$Tmin)
@@ -117,9 +123,11 @@ colnames(Historic_tmin) <- c("YrMon", SiteNames)
 ####################################################################################
 ############# PARSE GCMs ################    
 
+#Directory for projection data
 WD2 <- paste(WD, "/bcca5", sep='')
 setwd(WD2)
 
+#Function to get full list of projections included in .ncdf file
 getProjs <- function(ncObject){     # return vector of projection names as characters. Not generic.
   ps <- ncatt_get(ncObject, varid=0, attname='Projections')
   projs <- data.frame((strsplit(ps[[2]], ", ")))
