@@ -30,16 +30,16 @@ Monthly_Tmax_delta = data.frame(months,Tmax_delta=with(Future_all, tapply(TmaxCu
 Monthly_Tmax_delta = melt(Monthly_Tmax_delta, id="months")
 names(Monthly_Tmax_delta) = c("month","CF","Tmax") 
 Monthly_Tmax_delta$CF = factor(Monthly_Tmax_delta$CF, 
-                               levels = c("Tmax_delta.Warm.Wet", "Tmax_delta.Hot.Wet", "Tmax_delta.Central", "Tmax_delta.Warm.Dry", "Tmax_delta.Hot.Dry"), 
-                               labels=c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry"))
+                               levels = unique(Monthly_Tmax_delta$CF), 
+                               labels=CFs)
 
 Monthly_Tmin_delta = data.frame(months,Tmin_delta=with(Future_all, tapply(TminCustom, list(Date$mon, CF), mean))-
                                   with(Baseline_all, tapply(TminCustom, list(Date$mon, CF), mean)))
 Monthly_Tmin_delta = melt(Monthly_Tmin_delta, id="months")
 names(Monthly_Tmin_delta) = c("month","CF","Tmin") 
 Monthly_Tmin_delta$CF = factor(Monthly_Tmin_delta$CF, 
-                               levels = c("Tmin_delta.Warm.Wet", "Tmin_delta.Hot.Wet", "Tmin_delta.Central", "Tmin_delta.Warm.Dry", "Tmin_delta.Hot.Dry"), 
-                               labels=c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry"))
+                               levels = unique(Monthly_Tmin_delta$CF), 
+                               labels=CFs)
 
 
 #### Create table with monthly precip delta by CF
@@ -48,8 +48,8 @@ Monthly_Precip_delta = data.frame(months,Precip_delta=with(Future_all, tapply(Pr
 Monthly_Precip_delta = melt(Monthly_Precip_delta, id="months")
 names(Monthly_Precip_delta) = c("month","CF","Precip")
 Monthly_Precip_delta$CF = factor(Monthly_Precip_delta$CF, 
-                                 levels = c("Precip_delta.Warm.Wet", "Precip_delta.Hot.Wet", "Precip_delta.Central", "Precip_delta.Warm.Dry", "Precip_delta.Hot.Dry"), 
-                                 labels=c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry"))
+                                 levels = unique(Monthly_Precip_delta$CF), 
+                                 labels=CFs)
 
 ### Create table with seasonal precip delta by CF
 Seasonal_Precip_delta = data.frame(Precip_delta=with(Future_all, tapply(PrecipCustom, list(season, CF), mean))-
@@ -59,8 +59,8 @@ Seasonal_Precip_delta$season = seasons
 Seasonal_Precip_delta = melt(Seasonal_Precip_delta, id="season")
 names(Seasonal_Precip_delta) = c("Season","CF","Precip")
 Seasonal_Precip_delta$CF = factor(Seasonal_Precip_delta$CF, 
-                                 levels = c("Precip_delta.Warm.Wet", "Precip_delta.Hot.Wet", "Precip_delta.Central", "Precip_delta.Warm.Dry", "Precip_delta.Hot.Dry"), 
-                                 labels=c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry"))
+                                 levels = unique(Seasonal_Precip_delta$CF), 
+                                 labels=CFs)
 
 
 ###### TOTAL & CONSECUTIVE DAYS OVER/UNDER THRESHOLD TEMPs ######
@@ -142,7 +142,7 @@ Baseline_all$HeatConsecutive=(Baseline_all$Over100)*unlist(lapply(rle(Baseline_a
 HeatMax_baseline=data.frame(with(Baseline_all, tapply(HeatConsecutive, list(GCM, Date$year), max)))
 HeatMax_baseline=data.frame(CF=CF_GCM$CF, HeatMaxDays=rowMeans(HeatMax_baseline)) #max values averaged over 30 years for each GCM
 HeatMax_baseline$CF = factor(HeatMax_baseline$CF, ordered=TRUE, 
-                                 levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                                 levels=unique(HeatMax_baseline$CF)) 
 HeatMax_baseline$timeframe = "Historical"
 
 HeatMax_baseline$HeatConsecutiveComp = ifelse(HeatMax_baseline$HeatMaxDays != 0, (HeatMaxHist)/(HeatMax_baseline$HeatMaxDays), 1)
@@ -153,7 +153,7 @@ Baseline_all$ColdConsecutive=(Baseline_all$UnderColdTemp)*unlist(lapply(rle(Base
 ColdMax_baseline=data.frame(with(Baseline_all, tapply(ColdConsecutive, list(GCM, Date$year), max)))
 ColdMax_baseline=data.frame(CF=CF_GCM$CF, ColdMaxDays=rowMeans(ColdMax_baseline)) #max values averaged over 30 years for each GCM
 ColdMax_baseline$CF = factor(ColdMax_baseline$CF, ordered=TRUE, 
-                             levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                             levels=unique(ColdMax_baseline$CF)) 
 ColdMax_baseline$timeframe = "Historical"
 
 ColdMax_baseline$ColdConsecutiveComp = ifelse(ColdMax_baseline$ColdMaxDays != 0, (ColdMaxHist)/(ColdMax_baseline$ColdMaxDays), 1)
@@ -165,7 +165,7 @@ Future_all$HeatConsecutive=(Future_all$Over100)*unlist(lapply(rle(Future_all$Ove
 HeatMax_future=data.frame(with(Future_all, tapply(HeatConsecutive, list(GCM, Date$year), max)))
 HeatMax_future=data.frame(CF=CF_GCM$CF, HeatMaxDays=rowMeans(HeatMax_future)) #max values averaged over 30 years for each GCM
 HeatMax_future$CF = factor(HeatMax_future$CF, ordered=TRUE, 
-                               levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                               levels=unique(HeatMax_future$CF))
 HeatMax_future$timeframe = "Future"
 
    # Future max consecutive cold days by GCM & CF
@@ -173,7 +173,7 @@ Future_all$ColdConsecutive=(Future_all$UnderColdTemp)*unlist(lapply(rle(Future_a
 ColdMax_future=data.frame(with(Future_all, tapply(ColdConsecutive, list(GCM, Date$year), max)))
 ColdMax_future=data.frame(CF=CF_GCM$CF, ColdMaxDays=rowMeans(ColdMax_future)) #max values averaged over 30 years for each GCM
 ColdMax_future$CF = factor(ColdMax_future$CF, ordered=TRUE, 
-                           levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                           levels=unique(ColdMax_future$CF)) 
 ColdMax_future$timeframe = "Future"
 
 #max consecutive 100 deg days
@@ -249,7 +249,7 @@ Baseline_all$DroughtConsecutive=(Baseline_all$NoPrecip)*unlist(lapply(rle(Baseli
 DroughtMaxGCMs_baseline=data.frame(with(Baseline_all, tapply(DroughtConsecutive, list(GCM, Date$year), max)))
 DroughtMaxGCMs_baseline=data.frame(CF=CF_GCM$CF, DroughtMaxDays=rowMeans(DroughtMaxGCMs_baseline)) #max values averaged over 30 years for each GCM
 DroughtMaxGCMs_baseline$CF = factor(DroughtMaxGCMs_baseline$CF,ordered=TRUE,
-                                    levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                                    levels=unique(DroughtMaxGCMs_baseline$CF)) #correctly order the CFs
 DroughtMaxGCMs_baseline$timeframe = "Historical"
 
 ##### Adjust baseline to match Historical
@@ -260,7 +260,7 @@ DroughtMaxGCMs_baseline$Adjusted = with(DroughtMaxGCMs_baseline, DroughtMaxDays 
 DroughtMaxGCMs_future=data.frame(with(Future_all, tapply(DroughtConsecutive, list(GCM, Date$year), max)))
 DroughtMaxGCMs_future=data.frame(CF=CF_GCM$CF, DroughtMaxDays=rowMeans(DroughtMaxGCMs_future)) #max values averaged over 30 years for each GCM
 DroughtMaxGCMs_future$CF = factor(DroughtMaxGCMs_future$CF,ordered=TRUE,
-                                  levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                                  levels=unique(DroughtMaxGCMs_future$CF)) #correctly order the CFs
 DroughtMaxGCMs_future$timeframe = "Future"
 
 #### Apply historical adjustment to future values
@@ -318,7 +318,8 @@ DroughtSeasons_future$SummerAdj = with(DroughtSeasons_future, Summer * SummerCom
 DroughtSeasons_future$FallAdj = with(DroughtSeasons_future, Fall * FallComp)
 
 
-DroughtSeasons_future$CF = factor(DroughtSeasons_future$CF,ordered=TRUE,levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+DroughtSeasons_future$CF = factor(DroughtSeasons_future$CF,ordered=TRUE,
+                                  levels=unique(DroughtSeasons_future$CF)) #correctly order the CFs
 DroughtSeasons_future$timeframe = "Future"
 
 keeps = c("CF", "WinterAdj", "SpringAdj", "SummerAdj", "FallAdj", "timeframe")
@@ -329,7 +330,7 @@ DroughtSeasons_future = DroughtSeasons_future[keeps]
 # Combine baseline and future drought (max consec zero precip days) dfs for boxplotting
 DroughtSeasons=data.frame(rbind(DroughtSeasons_baseline,DroughtSeasons_future))
 names(DroughtSeasons) = c("CF", "Winter", "Spring", "Summer", "Fall", "timeframe")
-DroughtSeasons=melt(DroughtSeasons, id=list("CF","timeframe"))
+DroughtSeasons=melt(DroughtSeasons, id=c("CF","timeframe"))
 names(DroughtSeasons)=c("CF","Timeframe","Season","DroughtMax")
 
 #### Remove extra data frames
@@ -343,7 +344,7 @@ PrecipMax_Hist = mean(tapply(Historical_all$PrecipCustom, Historical_all$Date$ye
 PrecipMax_baseline=data.frame(with(Baseline_all, tapply(PrecipCustom, list(GCM, Date$year), max)))
 PrecipMax_baseline=data.frame(CF=CF_GCM$CF, PrecipMax=rowMeans(PrecipMax_baseline)) #max values averaged over 30 years for each GCM
 PrecipMax_baseline$CF = factor(PrecipMax_baseline$CF, ordered=TRUE, 
-                               levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                               levels=unique(PrecipMax_baseline$CF)) #correctly order the CFs
 PrecipMax_baseline$timeframe = "Historical"
 
 PrecipMax_baseline$PrecipComp = ((PrecipMax_Hist)/(PrecipMax_baseline$PrecipMax))
@@ -352,7 +353,7 @@ PrecipMax_baseline$AdjustedMaxPrecip = with(PrecipMax_baseline, PrecipMax * Prec
 PrecipMax_future=data.frame(with(Future_all, tapply(PrecipCustom, list(GCM, Date$year), max)))
 PrecipMax_future=data.frame(CF=CF_GCM$CF, PrecipMax=rowMeans(PrecipMax_future)) #max values averaged over 30 years for each GCM
 PrecipMax_future$CF = factor(PrecipMax_future$CF, ordered=TRUE, 
-                             levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry")) #correctly order the CFs
+                             levels=unique(PrecipMax_future$CF)) #correctly order the CFs
 PrecipMax_future$timeframe = "Future"
 
 PrecipMax_future$PrecipComp = ((PrecipMax_Hist)/(PrecipMax_baseline$PrecipMax))
