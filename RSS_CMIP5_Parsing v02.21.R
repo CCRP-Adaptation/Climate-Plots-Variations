@@ -52,6 +52,8 @@ PrecipThreshold = 0.05    # inches per day. Precip Threshold (used to measure Dr
 CFLow = 0.25     # Threshold percentages for defining Climate futures. Default low/high:  0.25, 0.75
 CFHigh = 0.75
 
+CFs = c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry")     # How climate futures should be labeled 
+
 #################    End of Intials   ############################################
 ########################### HISTORICAL DATA EXTRACTION  ##########################  
 ncDir <- paste(WD, "/1_8obs/", sep="")
@@ -280,13 +282,13 @@ Future_Means$CF4 = as.numeric((Future_Means$DeltaTavg<Tavg & Future_Means$DeltaP
 Future_Means$CF5 = as.numeric((Future_Means$DeltaTavg>Tavg & Future_Means$DeltaPr<Pr25) | Future_Means$DeltaTavg>Tavg75 & Future_Means$DeltaPr<PrAvg)
 
 #Assign full name of climate future to new variable CF
-Future_Means$CF[Future_Means$CF1==1]="Warm Wet"
-Future_Means$CF[Future_Means$CF2==1]="Hot Wet"
-Future_Means$CF[Future_Means$CF3==1]="Central"
-Future_Means$CF[Future_Means$CF4==1]="Warm Dry"
-Future_Means$CF[Future_Means$CF5==1]="Hot Dry"
+Future_Means$CF[Future_Means$CF1==1]=CFs[1]
+Future_Means$CF[Future_Means$CF2==1]=CFs[2]
+Future_Means$CF[Future_Means$CF3==1]=CFs[3]
+Future_Means$CF[Future_Means$CF4==1]=CFs[4]
+Future_Means$CF[Future_Means$CF5==1]=CFs[5]
 Future_Means$CF=as.factor(Future_Means$CF)
-Future_Means$CF = factor(Future_Means$CF,ordered=TRUE,levels=c("Warm Wet","Hot Wet","Central","Warm Dry","Hot Dry"))
+Future_Means$CF = factor(Future_Means$CF,ordered=TRUE,levels=CFs)
 
 #     Remove extraneous Climate Future columns
 Future_Means$CF1 = NULL
