@@ -42,7 +42,7 @@ FilePre <- paste(SiteID, Lat, Lon, "CF_", sep="_")
 
       # Need to check all the subsets
       ### NEED TO CHANGE LINE 72 for ordering scenarios on plots
-FutureSubset <- c("Hot Wet","Warm Dry")          # ("Hot Dry", "Central", "Warm Wet")
+FutureSubset <- c("Hot Wet","Warm Dry")          # Select two scenarios from the CFs vector specified in CMIP5_Parsing script. Names must match.
 Scenario1<-FutureSubset[1]
 Scenario2<-FutureSubset[2]
 
