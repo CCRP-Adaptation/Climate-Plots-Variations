@@ -27,10 +27,7 @@ library(plyr)
 library(reshape2)
 
 rm(list=ls())
-#setwd("/Volumes/Seagate1_Blue2TB/COLM RSS/Figs/")
-#setwd("e:/COLM RSS/Figs/")
-# setwd('D:/Users/gschuurman/Documents/Planning/Resource Stewardship Strategies/HOBE RSS - Fall 2016 & 2016/HOBE Climate future plots/RSS R scripts_20151022')
-# setwd('D:/CHOH RSS/Figs Scenarios2/')
+
 setwd("C:/Users/arcarlson/Documents/RSS Plots/CMIP5_BOR/RMNP")
 
 #load("COLM_39.0625_-108.6875_Final_Environment.RData")
@@ -82,7 +79,7 @@ scatter + geom_point(aes(color=emissions),size=4) +
   theme(axis.text=element_text(size=20, colour='black'),
         axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=24,face="bold",vjust=2),
+        plot.title=element_text(size=24,face="bold",hjust=0.5),
         legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
   labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
@@ -108,8 +105,8 @@ ggplot(MP3, aes(x=month,y=30*Precip,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=1.0),
-        plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(title = paste(SiteID, " - Change in average monthly precipitation in 2040 (2025-2055) vs 1950-1999"), 
+        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
+  labs(title = paste(SiteID, "- Change in average monthly precipitation in 2040 (2025-2055) vs 1950-1999"), 
        x = "Month", y = "Change in Precipitation (in)") +
   scale_fill_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C"))
 
@@ -125,8 +122,8 @@ ggplot(Tmax3, aes(x=month, y=Tmax, group=CF, colour = CF)) +
   theme(axis.text=element_text(size=16),
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=1.0),
-        plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(title = paste(SiteID, " - Change in average daily Tmax in 2040 (2025-2055) vs 1950-1999"), 
+        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
+  labs(title = paste(SiteID, "- Change in average daily Tmax in 2040 (2025-2055) vs 1950-1999"), 
             x = "Month", y = "Change in Temperature (Degrees F)") +
   scale_color_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C")) +
   scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmax_delta$Tmax))))
@@ -144,8 +141,8 @@ ggplot(Tmin3, aes(x=month, y=Tmin, group=CF, colour = CF)) +
   theme(axis.text=element_text(size=16),
         axis.title.x=element_text(size=16,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=1.0),
-        plot.title=element_text(size=24,face="bold",vjust=2)) +
-  labs(title = paste(SiteID, " - Change in average daily Tmin in 2040 (2025-2055) vs 1950-1999"),
+        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
+  labs(title = paste(SiteID, "- Change in average daily Tmin in 2040 (2025-2055) vs 1950-1999"),
             x = "Month", y = "Change in Temperature (Degrees F)") +
   scale_color_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C")) +
   scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmin_delta$Tmin))))
@@ -174,9 +171,9 @@ ggplot(DM3mean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=24,face="bold",vjust=2)) +
+        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
   coord_cartesian(ylim=c(0, 20)) +
-  labs(title = paste(SiteID, " - Max Annual Avg. Drought Length in Historical (1950-1999) & Future (2025-2055)"), 
+  labs(title = paste(SiteID, "- Max Annual Avg. Drought Length in Historical (1950-1999) & Future (2025-2055)"), 
        x = "Historical & Future Climate Scenarios", y = "Drought Length (Days)") +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange","#FFFFBF","#D7191C"))
 
@@ -203,9 +200,9 @@ ggplot(TOHotTempmean, aes(x=CF,y=MeanOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.8),
-        plot.title=element_text(size=24,face="bold",vjust=2)) +
+        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
   #coord_cartesian(ylim=c(50, 65)) +
-  labs(list(title = paste(SiteID, " - Avg. Tot. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
+  labs(list(title = paste(SiteID, "- Avg. Tot. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey","blue", "orange","#FFFFBF","#D7191C"))
 
@@ -232,9 +229,9 @@ ggplot(TCOHotTempmean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",vjust=2)) +
+        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
   # coord_cartesian(ylim=c(0, 40)) +
-  labs(list(title = paste(SiteID, " - Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
+  labs(list(title = paste(SiteID, "- Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey", "blue","orange","#D7191C"))
 
@@ -261,9 +258,9 @@ ggplot(TUColdTempmean, aes(x=CF,y=MeanUnderColdTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=18,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",vjust=2)) +
+        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
     #  coord_cartesian(ylim=c(30, 65)) +
-  labs(list(title = paste(SiteID, " - Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
+  labs(list(title = paste(SiteID, "- Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
@@ -272,14 +269,16 @@ ggsave(paste(FilePre, "Days_Under_ColdTemp.png", sep=""), width = 15, height = 9
 
   #Create data frame for days/year under historic 5th percentile value
 TU5thPercentile = rbind(TU5thPercentileH, TU5thPercentile3)
+TU5thPercentile$CF<-factor(TU5thPercentile$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TU5thPercentile$CF))
+TU5thPercentile$PercDays<-as.numeric(TU5thPercentile$PercDays)
 
       # Bar graph of days/year with Tmin under historic 5th percentile value
 ggplot(TU5thPercentile, aes(x=CF, y=PercDays*365, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=18,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",vjust=2)) +
-  labs(list(title = paste(SiteID, "- Days/Yr with Tmin < Historic 5th Percentile (1950-1999) in ", Year),
+        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(Baseline5thPercentile, 1), "°F) in ", Year, sep=""),
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
@@ -287,14 +286,16 @@ ggsave(paste(FilePre, "Days_Under_5thPercentile.png", sep=""), width = 15, heigh
 
   #Create data frame for days/year over historic 95th percentile value
 TO95thPercentile = rbind(TO95thPercentileH, TO95thPercentile3)
+TO95thPercentile$CF<-factor(TO95thPercentile$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TO95thPercentile$CF))
+TU5thPercentile$PercDays<-as.numeric(TO95thPercentile$PercDays)
 
       # Bar graph of days/year with Tmin under historic 5th percentile value
 ggplot(TO95thPercentile, aes(x=CF, y=PercDays*365, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=18,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",vjust=2)) +
-  labs(list(title = paste(SiteID, "- Days/Yr with Tmax > Historic 95th Percentile (1950-1999) in ", Year),
+        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(Baseline95thPercentile,1), "°F) in ", Year, sep=""),
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
