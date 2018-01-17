@@ -44,8 +44,8 @@ beginRefYr = 1900
 endRefYr = 1970
 
 BeginYr	= 1895   # is this data file or for plots?
-EndYr = 2015
-dataEndYr = 2015   # needed for rolling mean plot below.  
+EndYr = 2016
+dataEndYr = 2016   # needed for rolling mean plot below.  
 stepYrs	= 10		  # for period plots 
 rollLen = 10      # period of calc for rolling average; default 10 = decadal
 
@@ -112,7 +112,7 @@ doP2 <- "YES"
 p1_start  = 1900
 p1_end    = 1970
 p2_start  = 1970
-p2_end    = 2015
+p2_end    = 2016
 	
 yrAvgs$tmaxP1 <- yrAvgs$tmaxAvg
 yrAvgs$tmaxP1[which(yrAvgs$cYr < p1_start | yrAvgs$cYr > p1_end)] = NA
@@ -745,7 +745,7 @@ PlotName <- "Red-Blue Anomaly Filled Line"
 temp = yrAvgs$tmaxAvg - mtempMax	
 plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel, 
 	ylab = expression(paste("Tmax (", degree*F,")", sep=""))
-	, xlim =c(1895, 2015))
+	, xlim =c(BeginYr, dataEndYr))
 	# text(1896, 18.9, "A", cex = 1.2)	
 abline(h = 0)	
 tp <- TwoPolys(yrAvgs$cYr, temp, 0)
@@ -755,7 +755,7 @@ polygon(tp$X, tp$upper, col="red")
 # Tmin
 temp = yrAvgs$tminAvg - mtempMin  
 plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel, 	
-	ylab = expression(paste("Tmin (", degree*F,")", sep="")), xlim =c(1895, 2015))
+	ylab = expression(paste("Tmin (", degree*F,")", sep="")), xlim =c(BeginYr, dataEndYr))
 	# text(1896, 2.08, "B", cex = 1.2)		
 abline(h = 0)
 
@@ -765,7 +765,7 @@ polygon(tp$X, tp$upper, col="red")
     # TMean
 temp = yrAvgs$tmeanAvg - mtempMean
 plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel, 	
-	ylab = expression(paste("Tmean (", degree*F,")", sep="")), xlim =c(1895, 2015))
+	ylab = expression(paste("Tmean (", degree*F,")", sep="")), xlim =c(BeginYr, dataEndYr))
 	# text(1896, 2.08, "B", cex = 1.2)		
 abline(h = 0)
 tp <- TwoPolys(yrAvgs$cYr, temp, 0)
@@ -777,7 +777,7 @@ temp = yrAvgs$pptAvg - mppt
 xlabel = "Year"
 ylabel = "Precip (in / yr)"
 plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel,
-     ylab=ylabel, xlim =c(1895, 2015))
+     ylab=ylabel, xlim =c(BeginYr, dataEndYr))
 #  text(1896, 622, "C", cex = 1.2)	
 abline(h = 0)
 tp <- TwoPolys(yrAvgs$cYr, temp, 0)
