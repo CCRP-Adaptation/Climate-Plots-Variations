@@ -45,9 +45,9 @@ scatter + geom_point(aes(color=emissions),size=4) +
             y = "Change in average annual precipitation (in)")) +
   scale_colour_manual(values=c("blue", "red"))+
   guides(color=guide_legend(title="Emissions\nScenarios\n")) +
-  geom_rect(xmin=Tavg, xmax=Tavg100, ymin=365*PrAvg, ymax=365*Pr100, color = "red", alpha=0) + 
-  geom_rect(xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75, color = "yellow", alpha=0) +
-  geom_rect(xmin=Tavg0, xmax=Tavg, ymin=365*Pr0, ymax=365*PrAvg, color = "blue", alpha=0) +
+  geom_rect(xmin=Tavg, xmax=Tavg100, ymin=365*PrAvg, ymax=365*Pr100, color = "red", alpha=0, size=1) + 
+  geom_rect(xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75, color = "yellow", alpha=0, size=1) +
+  geom_rect(xmin=Tavg0, xmax=Tavg, ymin=365*Pr0, ymax=365*PrAvg, color = "blue", alpha=0, size=1) +
   geom_hline(aes(yintercept=365*mean(Future_Means$DeltaPr)),linetype=2) + 
   geom_vline(aes(xintercept=mean(Future_Means$DeltaTavg)),linetype=2)  
 #scale_y_continuous(limits=c(-3.75,3.75))
