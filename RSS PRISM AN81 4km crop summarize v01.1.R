@@ -2,8 +2,6 @@
 #   John Gross
 #   30 Oct 2015
 
-###   Check file name length (~ line 87) for Windows (38?) vs Mac (37)
-
 #   Input is single point, same as for extracting projection data.
 #   This code buffers the point. Default is one cell buffer (e.g. averaged over 3x3 grid)
 
@@ -20,7 +18,7 @@ library(WriteXLS)
 rm(list = ls()) 
 
 # to recover earlier session set WD and
-# load("HOBE_32.9375_-85.6875_PptTminTmax_IntermediateFiles.RData")
+# load("FileName.RData")
 
 #############  Initialize   ##############
 
