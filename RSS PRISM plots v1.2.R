@@ -2,7 +2,7 @@
 #   John Gross   
 #   Inputs:  rData output from RSS parse script
 
-# ToDo - write data files out to xlsx file.  Line 458 change for(i in 0:(nSteps-1) to (i in 0:nSteps)
+#  v1.3 - Includes PRISM data up to 2016, edited code to easily change data end year (May 2017)
 #  v1.2 - png outputs; standardized out file names; revised regr table (16 Nov 2015)
 #  v1.1 - minor fixes to red-blue plot, 10-yr running mean
   #  need to deal with outfile directories - use info from RData file and get rid of code here
