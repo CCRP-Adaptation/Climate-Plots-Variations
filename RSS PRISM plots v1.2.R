@@ -2,6 +2,8 @@
 #   John Gross   
 #   Inputs:  rData output from RSS parse script
 
+#  v1.4 - Revised monthly average Tmax/Tmin/Ppt plots. Uses separate axes to improve visibility of ppt bar plot, 
+#         added std. dev. bars to ppt bar plot, and changed x-axis labels to month abbreviations. 
 #  v1.3 - Includes PRISM data up to 2016, edited code to easily change data end year (May 2017)
 #  v1.2 - png outputs; standardized out file names; revised regr table (16 Nov 2015)
 #  v1.1 - minor fixes to red-blue plot, 10-yr running mean
@@ -145,9 +147,11 @@ tmaxMon <- tapply(baseData$tmax, baseData$mon, mean)
 tminMon <- tapply(baseData$tmin, baseData$mon, mean)
 tmeanMon <- tapply(baseData$tmean, baseData$mon, mean)
 pptMon  <- tapply(baseData$ppt, baseData$mon, mean)
+pptMonSD <- tapply(baseData$ppt, baseData$mon, sd)
 
-monAvg <- data.frame(cbind(tmaxMon, tminMon, pptMon))
+monAvg <- data.frame(cbind(tmaxMon, tminMon, pptMon, pptMonSD))
 monAvg$mon <- seq(1:12)
+monAvg$monNames <- c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
 tmaxq <- tapply(baseData$tmax, baseData$mon, quantile)
 tminq <- tapply(baseData$tmin, baseData$mon, quantile)
 
@@ -162,24 +166,32 @@ for(i in 1:12){
 }
 
 PlotName <- "Avg Monthly Tmin Tmax Ppt"
-t <- ggplot(monAvg) + geom_bar(aes(x=mon, pptMon), stat = "identity",  fill = I("gray75")) + 				
-			 	geom_line(aes(mon, tmaxMon), colour = 'red', size=1) + 
-				geom_line(aes(mon, tmax25), colour = 'red', size=.5, linetype=2)+
-				geom_line(aes(mon, tmax75), colour = 'red', size=.5, linetype=2)+
-				
-				geom_line(aes(mon, tminMon), colour = 'blue', size=1) +
-				geom_line(aes(mon, tmin25), colour = 'blue', size=.5, linetype=2)+
-				geom_line(aes(mon, tmin75), colour = 'blue', size=.5, linetype=2)+
-				
-				ylab(expression(paste(Temperature, ~({}^o*F), " /  Precip (in/mon)"))) + xlab("Month") +
-				scale_x_continuous(breaks = c(2,4,6,8,10))+
-				theme(axis.text.x = element_text(size = 12, colour="black")) +
-				theme(axis.text.y = element_text(size = 12, colour="black")) 
+OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, sep = "")		 
 
-print(t) 	
-OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, sep = "")
-ggsave(paste(OFName, ".png", sep=""), width=6.5, height=4.5)			 
-							
+png(paste(OFName, ".png", sep=""), width=6.5*dpi, height=4.5*dpi, res=dpi)
+par(mar=c(5,5,2,5))
+attach(monAvg)
+plot(tmax75~mon,
+     type="l", col="red", lty=2, lwd=2,
+     xlab=NA,
+     ylab=expression(paste(Temperature, ~({}^o*F))),
+     ylim=c(0,110),
+     xaxt='n')
+lines(tmax25~mon, col="red", lty=2, lwd=2)
+lines(tmaxMon~mon, col="red", lwd=3)
+lines(tmin75~mon, col="blue", lty=2, lwd=2) 
+lines(tmin25~mon, col="blue", lty=2, lwd=2)
+lines(tminMon~mon, col="blue", lwd=3)
+par(new = T)
+Ppt <- barplot(pptMon, names.arg=monNames, 
+               xlab="Month", ylab=NA, axes=FALSE,
+               ylim=c(0,20),
+               border=NA)
+segments(Ppt, pptMon - pptMonSD, Ppt, pptMon + pptMonSD)
+axis(side=4)
+mtext(side=4, line=3, "Precip (in/mon)")
+detach(monAvg)
+dev.off()							
 
 #-------------------------------------------------#
 ############  Running average plots   #############
