@@ -595,7 +595,14 @@ for(i in 1:4)
 		  pptSeas[,i] <- pptSeas[,i] - mean(pptSeas[,i])}
 
 yrcat <- (round(unique(baseData$yr)/10)*10)   # year category (e.g., 1900,1900, 1910)
+yrcat <- yrcat[1:(floor(length(yrcat)/10)*10)]  #remove incomplete decades at end of record
 yLabPs <- length(unique(yrcat))
+
+#Remove extra years from data
+tmaxSeas <- tmaxSeas[1:(yLabPs*10),]
+tminSeas <- tminSeas[1:(yLabPs*10),]
+tmeanSeas <- tmeanSeas[1:(yLabPs*10),]
+pptSeas <- pptSeas[1:(yLabPs*10),]
 
 poffset <- c(-.2, 0, .2, .4)  # box offsets for win, spr, sum, fal
 pcol <- c("lightblue", "lightgreen", "lightpink", "linen")
