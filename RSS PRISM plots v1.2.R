@@ -508,11 +508,12 @@ pdat$clr[which(pdat$seas=="Summer")] <- "red"
 pdat$clr[which(pdat$seas=="Fall")] <- "brown"
 
       # need roundDown function to define axis ranges
-
+seas.cols = c("brown", "darkgreen", "red", "blue")
 PlotName <- "Season Decadal Anomaly Lines" 
 a <- ggplot(pdat, aes(startYr+5, tmax, group=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
-		geom_line(colour = pdat$clr, size=1) +
+		geom_line(size=1) +
+		scale_color_manual(values=seas.cols) + 
 		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
 		
 		theme(axis.text.y = element_text(size = 10)) +
@@ -522,7 +523,8 @@ a <- ggplot(pdat, aes(startYr+5, tmax, group=seas, colour=seas)) +
 		
 b <- ggplot(pdat, aes(startYr+5, tmin, group=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
-		geom_line(colour = pdat$clr, size=1) +
+		geom_line(size=1) +
+		scale_color_manual(values=seas.cols) + 
 		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
 		
 		theme(axis.text.y = element_text(size = 10)) +
@@ -532,7 +534,8 @@ b <- ggplot(pdat, aes(startYr+5, tmin, group=seas, colour=seas)) +
 		
 c <- ggplot(pdat, aes(startYr+5, tmean, group=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
-		geom_line(colour = pdat$clr, size=1) +
+		geom_line(size=1) +
+		scale_color_manual(values=seas.cols) + 
 		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
 		
 		theme(axis.text.y = element_text(size = 10)) +
@@ -542,7 +545,8 @@ c <- ggplot(pdat, aes(startYr+5, tmean, group=seas, colour=seas)) +
 		
 d <- ggplot(pdat, aes(startYr+5, ppt, group=seas, colour=seas)) +
 		#ylim(-325, 325) +
-		geom_line(colour = pdat$clr, size=1) +
+		geom_line(size=1) +
+		scale_color_manual(values=seas.cols) + 
 		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
 		
 		theme(axis.text.y = element_text(size = 7)) +
