@@ -65,11 +65,11 @@ TCOHotTemp3<-subset(HeatMax, CF %in% FutureSubset)
 TUColdTempH<-subset(TotalUnderColdTemp, timeframe == "Historical")
 TUColdTemp3<-subset(TotalUnderColdTemp, CF %in% FutureSubset& timeframe == "Future")
 
-TU5thPercentileH<-subset(FutureUnder5th, CF == "Historical")
-TU5thPercentile3<-subset(FutureUnder5th, CF %in% FutureSubset)
+TU5thPercentileH<-subset(TotalUnder5th, CF == "Historical")
+TU5thPercentile3<-subset(TotalUnder5th, CF %in% FutureSubset & timeframe == "Future")
 
-TO95thPercentileH<-subset(FutureOver95th, CF == "Historical")
-TO95thPercentile3<-subset(FutureOver95th, CF %in% FutureSubset)
+TO95thPercentileH<-subset(TotalOver95th, CF == "Historical")
+TO95thPercentile3<-subset(TotalOver95th, CF %in% FutureSubset & timeframe == "Future")
 
 ###############################################################working############################################
 
@@ -268,34 +268,42 @@ ggsave(paste(FilePre, "Days_Under_ColdTemp.png", sep=""), width = 15, height = 9
 
 
   #Create data frame for days/year under historic 5th percentile value
-TU5thPercentile = rbind(TU5thPercentileH, TU5thPercentile3)
-TU5thPercentile$CF<-factor(TU5thPercentile$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TU5thPercentile$CF))
-TU5thPercentile$PercDays<-as.numeric(TU5thPercentile$PercDays)
+TU5thPercentilemean<-ddply(TU5thPercentile3, "CF", summarise,
+                      MeanUnder5th=mean(Adjusted))
+newrow <- data.frame( "CF" = character(), "MeanUnder5th" = numeric(), stringsAsFactors=FALSE)
+newrow[nrow(newrow) + 1, ] <- c( "Historical", Hist_Total_95th_Days)
+TU5thPercentilemean<-rbind(TU5thPercentilemean, newrow)
+TU5thPercentilemean$CF<-factor(TU5thPercentilemean$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TU5thPercentilemean$CF))
+TU5thPercentilemean$MeanUnder5th<-as.numeric(TU5thPercentilemean$MeanUnder5th)
 
       # Bar graph of days/year with Tmin under historic 5th percentile value
-ggplot(TU5thPercentile, aes(x=CF, y=PercDays*365, fill=CF)) +
+ggplot(TU5thPercentilemean, aes(x=CF, y=MeanUnder5th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=18,vjust=0.8),
         plot.title=element_text(size=18,face="bold",hjust=0.5)) +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(Baseline5thPercentile, 1), "°F) in ", Year, sep=""),
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " °F) in ", Year, sep=""),
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
 ggsave(paste(FilePre, "Days_Under_5thPercentile.png", sep=""), width = 15, height = 9)
 
   #Create data frame for days/year over historic 95th percentile value
-TO95thPercentile = rbind(TO95thPercentileH, TO95thPercentile3)
-TO95thPercentile$CF<-factor(TO95thPercentile$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TO95thPercentile$CF))
-TU5thPercentile$PercDays<-as.numeric(TO95thPercentile$PercDays)
+TO95thPercentilemean<-ddply(TO95thPercentile3, "CF", summarise,
+                           MeanOver95th=mean(Adjusted))
+newrow <- data.frame( "CF" = character(), "MeanOver95th" = numeric(), stringsAsFactors=FALSE)
+newrow[nrow(newrow) + 1, ] <- c( "Historical", Hist_Total_95th_Days)
+TO95thPercentilemean<-rbind(TO95thPercentilemean, newrow)
+TO95thPercentilemean$CF<-factor(TO95thPercentilemean$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TO95thPercentilemean$CF))
+TO95thPercentilemean$MeanOver95th<-as.numeric(TO95thPercentilemean$MeanOver95th)
 
       # Bar graph of days/year with Tmin under historic 5th percentile value
-ggplot(TO95thPercentile, aes(x=CF, y=PercDays*365, fill=CF)) +
+ggplot(TO95thPercentilemean, aes(x=CF, y=MeanOver95th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=18,vjust=0.8),
         plot.title=element_text(size=18,face="bold",hjust=0.5)) +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(Baseline95thPercentile,1), "°F) in ", Year, sep=""),
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " °F) in ", Year, sep=""),
             x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
