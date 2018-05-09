@@ -33,8 +33,6 @@ setwd("C:/Users/arcarlson/Documents/RSS Plots/CMIP5_BOR/RMNP")
 #load("COLM_39.0625_-108.6875_Final_Environment.RData")
 load("RMNP_40.4375_-105.5625_Final_Environment.RData")
 
-TotalOverHotTemp <- TotalOver100
-
 FilePre <- paste(SiteID, Lat, Lon, "CF_", sep="_")
 
       # Need to check all the subsets
