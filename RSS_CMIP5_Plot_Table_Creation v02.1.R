@@ -430,7 +430,7 @@ rm(PrecipMax_baseline, PrecipMax_future)
 
 #### Create .xslx workbook with all data tables
 setwd(WD_plots)
-WriteXLS(c("Monthly_Precip_delta", "Monthly_Tmax_delta", "Monthly_Tmin_delta", "PrecipMax", "HeatMax", "ColdMax", "DroughtMax", "TotalOver100", "TotalUnderColdTemp", "Future_Means"), 
+WriteXLS(c("Monthly_Precip_delta", "Monthly_Tmax_delta", "Monthly_Tmin_delta", "PrecipMax", "HeatMax", "ColdMax", "DroughtMax", "TotalOverHotTemp", "TotalOver95th", "TotalUnderColdTemp", "TotalUnder5th", "Future_Means"), 
          sprintf("%s_%s_%s_CCSP_Plot_data.xlsx", SiteID, Lat, Lon), BoldHeaderRow = TRUE)
 
 ##### Save Current workspace environment
