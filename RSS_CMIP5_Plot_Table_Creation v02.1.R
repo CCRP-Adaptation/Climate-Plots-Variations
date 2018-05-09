@@ -66,75 +66,139 @@ Seasonal_Precip_delta$CF = factor(Seasonal_Precip_delta$CF,
 ###### TOTAL & CONSECUTIVE DAYS OVER/UNDER THRESHOLD TEMPs ######
 
 #### Historical
-Historical_all$Over_100 = Historical_all$TmaxCustom > HotTemp
-Hist_Total_100_Days = as.numeric(sum(Historical_all$Over_100)/HistYears)
+Historical_all$Over_HotTemp = Historical_all$TmaxCustom > HotTemp
+Hist_Total_HotTemp_Days = as.numeric(sum(Historical_all$Over_HotTemp)/HistYears)
 
-Historical_all$HeatConsecutive=(Historical_all$Over_100)*unlist(lapply(rle(Historical_all$Over_100)$lengths, seq_len))
+Historical_all$HeatConsecutive=(Historical_all$Over_HotTemp)*unlist(lapply(rle(Historical_all$Over_HotTemp)$lengths, seq_len))
 HeatMaxYearly_Hist = data.frame(HeatMax=tapply(Historical_all$HeatConsecutive, Historical_all$Date$year, max))
 HeatMaxHist = as.numeric(mean(HeatMaxYearly_Hist$HeatMax))
 
 Historical_all$Under_ColdTemp = Historical_all$TminCustom < ColdTemp
-Hist_Total_Under_ColdTemp_Days = as.numeric(sum(Historical_all$Under_ColdTemp)/HistYears)
+Hist_Total_ColdTemp_Days = as.numeric(sum(Historical_all$Under_ColdTemp)/HistYears)
 
 Historical_all$ColdConsecutive=(Historical_all$Under_ColdTemp)*unlist(lapply(rle(Historical_all$Under_ColdTemp)$lengths, seq_len))
 ColdMaxYearly_Hist = data.frame(ColdMax=tapply(Historical_all$ColdConsecutive, Historical_all$Date$year, max))
 ColdMaxHist = as.numeric(mean(ColdMaxYearly_Hist$ColdMax))
 
+HistTmax95 = quantile(Historical_all$TmaxCustom, .95)
+Hist_Total_95th_Days = (.05*nrow(Historical_all))/HistYears
+
+HistTmin05 = quantile(Historical_all$TminCustom, .05)
+Hist_Total_5th_Days = (.05*nrow(Historical_all))/HistYears
+
 #### Baseline
-Baseline_all$Over100=Baseline_all$TmaxCustom > (HotTemp)
 
-BaseOver100 = data.frame(aggregate(Baseline_all$Over100 ~ Baseline_all$GCM,Future_all,sum))
-names(BaseOver100) = c("GCM", "Total_100_Days")
-BaseOver100 = merge(BaseOver100, CF_GCM, by ="GCM")
-BaseOver100$timeframe = "Historical"
+### Hot days 
+## HotTemp threshold 
+Baseline_all$OverHotTemp=Baseline_all$TmaxCustom > HotTemp
 
-BaseOver100$Over100Comp = ifelse(BaseOver100$Total_100_Days != 0, (Hist_Total_100_Days)/(BaseOver100$Total_100_Days), 1)
-BaseOver100$Adjusted = ifelse((BaseOver100$Over100Comp == 0), Hist_Total_100_Days, (BaseOver100$Total_100_Days * BaseOver100$Over100Comp))
+BaseOverHotTemp = data.frame(aggregate(Baseline_all$OverHotTemp ~ Baseline_all$GCM,Future_all,sum))
+names(BaseOverHotTemp) = c("GCM", "Total_HotTemp_Days")
+BaseOverHotTemp = merge(BaseOverHotTemp, CF_GCM, by ="GCM")
+BaseOverHotTemp$timeframe = "Historical"
 
-##### Under ColdTemp
+BaseOverHotTemp$OverHotTempComp = ifelse(BaseOverHotTemp$Total_HotTemp_Days != 0, (Hist_Total_HotTemp_Days)/(BaseOverHotTemp$Total_HotTemp_Days), 1)
+BaseOverHotTemp$Adjusted = ifelse((BaseOverHotTemp$OverHotTempComp == 0), Hist_Total_HotTemp_Days, (BaseOverHotTemp$Total_HotTemp_Days * BaseOverHotTemp$OverHotTempComp))
+
+##95th percentile temp.
+Baseline_all$Over95th=Baseline_all$TmaxCustom > HistTmax95
+
+BaseOver95th = data.frame(aggregate(Baseline_all$Over95th ~ Baseline_all$GCM,Future_all,sum))
+names(BaseOver95th) = c("GCM", "Total_Over95th_Days")
+BaseOver95th = merge(BaseOver95th, CF_GCM, by ="GCM")
+BaseOver95th$timeframe = "Historical"
+
+BaseOver95th$Over95thComp = ifelse(BaseOver95th$Total_Over95th_Days != 0, (Hist_Total_95th_Days)/(BaseOver95th$Total_Over95th_Days), 1)
+BaseOver95th$Adjusted = ifelse((BaseOver95th$Over95thComp == 0), Hist_Total_95th_Days, (BaseOver95th$Total_Over95th_Days * BaseOver95th$Over95thComp))
+
+### Cold days 
+## ColdTemp threshold 
 Baseline_all$UnderColdTemp=Baseline_all$TminCustom < ColdTemp
 
 BaseUnderColdTemp = data.frame(aggregate(Baseline_all$UnderColdTemp ~ Baseline_all$GCM,Future_all,sum))  # sum by GCM
-names(BaseUnderColdTemp) = c("GCM", "Total_Cold_Days")
+names(BaseUnderColdTemp) = c("GCM", "Total_ColdTemp_Days")
 BaseUnderColdTemp = merge(BaseUnderColdTemp, CF_GCM, by ="GCM")
 BaseUnderColdTemp$timeframe = "Historical"
 
-BaseUnderColdTemp$UnderColdTempComp = ifelse(BaseUnderColdTemp$Total_Cold_Days != 0, 
-                                             (Hist_Total_Under_ColdTemp_Days)/(BaseUnderColdTemp$Total_Cold_Days), 1)
+BaseUnderColdTemp$UnderColdTempComp = ifelse(BaseUnderColdTemp$Total_ColdTemp_Days != 0, 
+                                             (Hist_Total_ColdTemp_Days)/(BaseUnderColdTemp$Total_ColdTemp_Days), 1)
 BaseUnderColdTemp$Adjusted = ifelse((BaseUnderColdTemp$UnderColdTempComp == 0), 
-                                    Hist_Total_UnderColdTemp_Days, (BaseUnderColdTemp$Total_Cold_Days * BaseUnderColdTemp$UnderColdTempComp))
+                                    Hist_Total_ColdTemp_Days, (BaseUnderColdTemp$Total_ColdTemp_Days * BaseUnderColdTemp$UnderColdTempComp))
+
+##5th percentile temp.
+Baseline_all$Under5th=Baseline_all$TminCustom < HistTmin05
+
+BaseUnder5th = data.frame(aggregate(Baseline_all$Under5th ~ Baseline_all$GCM,Future_all,sum))
+names(BaseUnder5th) = c("GCM", "Total_Under5th_Days")
+BaseUnder5th = merge(BaseUnder5th, CF_GCM, by ="GCM")
+BaseUnder5th$timeframe = "Historical"
+
+BaseUnder5th$Under5thComp = ifelse(BaseUnder5th$Total_Under5th_Days != 0, (Hist_Total_5th_Days)/(BaseUnder5th$Total_Under5th_Days), 1)
+BaseUnder5th$Adjusted = ifelse((BaseUnder5th$Under5thComp == 0), Hist_Total_5th_Days, (BaseUnder5th$Total_Under5th_Days * BaseUnder5th$Under5thComp))
 
 
 #### Future
-Future_all$Over100=Future_all$TmaxCustom > (HotTemp)
 
-FutureOver100 = data.frame(aggregate(Future_all$Over100 ~ Future_all$GCM,Future_all,sum))
-names(FutureOver100) = c("GCM", "Total_100_Days")
-FutureOver100 = merge(FutureOver100, CF_GCM, by ="GCM")
-FutureOver100$timeframe = "Future"
+### Hot days
+## HotTemp threshold
+Future_all$OverHotTemp=Future_all$TmaxCustom > HotTemp
 
-FutureOver100$Over100Comp = ifelse(FutureOver100$Total_100_Days != 0, (Hist_Total_100_Days)/(FutureOver100$Total_100_Days), 1)
-FutureOver100$Adjusted = ifelse((BaseOver100$Over100Comp == 0), Hist_Total_100_Days, (FutureOver100$Total_100_Days * BaseOver100$Over100Comp))
+FutureOverHotTemp = data.frame(aggregate(Future_all$OverHotTemp ~ Future_all$GCM,Future_all,sum))
+names(FutureOverHotTemp) = c("GCM", "Total_HotTemp_Days")
+FutureOverHotTemp = merge(FutureOverHotTemp, CF_GCM, by ="GCM")
+FutureOverHotTemp$timeframe = "Future"
 
-##### Under
+FutureOverHotTemp$OverHotTempComp = ifelse(FutureOverHotTemp$Total_HotTemp_Days != 0, (Hist_Total_HotTemp_Days)/(FutureOverHotTemp$Total_HotTemp_Days), 1)
+FutureOverHotTemp$Adjusted = ifelse((BaseOverHotTemp$OverHotTempComp == 0), Hist_Total_HotTemp_Days, (FutureOverHotTemp$Total_HotTemp_Days * BaseOverHotTemp$OverHotTempComp))
+
+TotalOverHotTemp = data.frame(rbind(FutureOverHotTemp, BaseOverHotTemp))
+
+## Historic 95th percentile 
+Future_all$Over95th=Future_all$TmaxCustom > HistTmax95
+
+FutureOver95th = data.frame(aggregate(Future_all$Over95th ~ Future_all$GCM,Future_all,sum))
+names(FutureOver95th) = c("GCM", "Total_Over95th_Days")
+FutureOver95th = merge(FutureOver95th, CF_GCM, by ="GCM")
+FutureOver95th$timeframe = "Future"
+
+FutureOver95th$Over95thComp = ifelse(FutureOver95th$Total_Over95th_Days != 0, (Hist_Total_95th_Days)/(FutureOver95th$Total_Over95th_Days), 1)
+FutureOver95th$Adjusted = ifelse((BaseOver95th$Over95thComp == 0), Hist_Total_95th_Days, (FutureOver95th$Total_Over95th_Days * BaseOver95th$Over95thComp))
+
+TotalOver95th = data.frame(rbind(FutureOver95th, BaseOver95th))
+
+### Cold days
+## ColdTemp threshold
 Future_all$UnderColdTemp=Future_all$TminCustom < ColdTemp
 
 FutureUnderColdTemp = data.frame(aggregate(Future_all$UnderColdTemp ~ Future_all$GCM,Future_all,sum))  # sum by GCM
-names(FutureUnderColdTemp) = c("GCM", "Total_Cold_Days")
+names(FutureUnderColdTemp) = c("GCM", "Total_ColdTemp_Days")
 FutureUnderColdTemp = merge(FutureUnderColdTemp, CF_GCM, by ="GCM")
 FutureUnderColdTemp$timeframe = "Future"
 
-FutureUnderColdTemp$UnderColdTempComp = ifelse(FutureUnderColdTemp$Total_Cold_Days != 0, 
-                                               (Hist_Total_Under_ColdTemp_Days)/(FutureUnderColdTemp$Total_Cold_Days), 1)
+FutureUnderColdTemp$UnderColdTempComp = ifelse(FutureUnderColdTemp$Total_ColdTemp_Days != 0, 
+                                               (Hist_Total_ColdTemp_Days)/(FutureUnderColdTemp$Total_ColdTemp_Days), 1)
 FutureUnderColdTemp$Adjusted = ifelse((BaseUnderColdTemp$UnderColdTempComp == 0), 
-                                      Hist_Total_UnderColdTemp_Days, (FutureUnderColdTemp$Total_Cold_Days * BaseUnderColdTemp$UnderColdTempComp))
+                                      Hist_Total_ColdTemp_Days, (FutureUnderColdTemp$Total_ColdTemp_Days * BaseUnderColdTemp$UnderColdTempComp))
 
-### Total
-TotalOver100 = data.frame(rbind(FutureOver100, BaseOver100))
 TotalUnderColdTemp = data.frame(rbind(FutureUnderColdTemp, BaseUnderColdTemp))
 
+## Historic 5th percentile
+Future_all$Under5th=Future_all$TminCustom < HistTmin05
+
+FutureUnder5th = data.frame(aggregate(Future_all$Under5th ~ Future_all$GCM,Future_all,sum))  # sum by GCM
+names(FutureUnder5th) = c("GCM", "Total_Under5th_Days")
+FutureUnder5th = merge(FutureUnder5th, CF_GCM, by ="GCM")
+FutureUnder5th$timeframe = "Future"
+
+FutureUnder5th$Under5thComp = ifelse(FutureUnder5th$Total_Under5th_Days != 0, 
+                                               (Hist_Total_5th_Days)/(FutureUnder5th$Total_Under5th_Days), 1)
+FutureUnder5th$Adjusted = ifelse((BaseUnder5th$Under5thComp == 0), 
+                                      Hist_Total_5th_Days, (FutureUnder5th$Total_Under5th_Days * BaseUnder5th$Under5thComp))
+
+TotalUnder5th = data.frame(rbind(FutureUnder5th, BaseUnder5th))
+
 # Remove extra data frames
-rm(FutureOver100, BaseOver100, FutureUnderColdTemp, BaseUnderColdTemp)
+rm(FutureOverHotTemp, BaseOverHotTemp, FutureUnderColdTemp, BaseUnderColdTemp, FutureOver95th, BaseOver95th, FutureUnder5th, BaseUnder5th)
 
 
 #Baseline max consecutive days over 100F per year by GCM and CF in 1950-1999 (HistYears = 1950 thru 1999 inclusive = 50)
