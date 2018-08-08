@@ -413,6 +413,127 @@ PrecipMax=data.frame(rbind(PrecipMax_future, PrecipMax_baseline))
 ### #Remove extra data frames
 rm(PrecipMax_baseline, PrecipMax_future)
 
+#######################################################################################################
+# Additional variables from DETO 
+#  days over 1 inch, 95, and 99 percent precip, growing season, wet-frost, freeze-thaw
+# create var for over 1 inch precip
+Historical_all$OverPr1<-0
+Historical_all$OverPr1[which(Historical_all$PrecipCustom >= 1)] <- 1
+Future_all$OverPr1 <-0
+Future_all$OverPr1[which(Future_all$PrecipCustom >= 1)] <- 1
+
+# create var for over .5 inch precip
+Historical_all$OverPr.5<-0
+Historical_all$OverPr.5[which(Historical_all$PrecipCustom >= .5)] <- 1
+Future_all$OverPr.5 <-0
+Future_all$OverPr.5[which(Future_all$PrecipCustom >= .5)] <- 1
+ 
+# create var for over 99% precip threshold
+highpr99<-as.numeric(quantile(Historical_all$PrecipCustom, .99))
+Historical_all$OverPr99<-0
+Historical_all$OverPr99[which(Historical_all$PrecipCustom >= highpr99)] <- 1
+Future_all$OverPr99 <-0
+Future_all$OverPr99[which(Future_all$PrecipCustom >= highpr99)] <- 1
+ 
+# create var for over 95% precip threshold
+highpr95<-as.numeric(quantile(Historical_all$PrecipCustom, .95))
+Historical_all$OverPr95<-0
+Historical_all$OverPr95[which(Historical_all$PrecipCustom >= highpr95)] <- 1
+Future_all$OverPr95 <-0
+Future_all$OverPr95[which(Future_all$PrecipCustom >= highpr95)] <- 1
+
+# create var for tmean
+Historical_all$TmeanCustom<-(Historical_all$TmaxCustom + Historical_all$TminCustom) / 2
+Future_all$TmeanCustom<-(Future_all$TmaxCustom + Future_all$TminCustom) / 2
+ 
+# create var for freeze-thaw count 32
+Historical_all$FT32<-0
+Historical_all$FT32[which(Historical_all$TmaxCustom > 32 & Historical_all$TminCustom < 32)] <- 1
+Future_all$FT32 <-0
+Future_all$FT32[which(Future_all$TmaxCustom > 32 & Future_all$TminCustom < 32)] <- 1
+ 
+# create var for freeze-thaw with buffer around freezing
+Historical_all$FTbuff<-0
+Historical_all$FTbuff[which(Historical_all$TmaxCustom > 34 & Historical_all$TminCustom < 28)] <- 1
+Future_all$FTbuff <-0
+Future_all$FTbuff[which(Future_all$TmaxCustom > 34 & Future_all$TminCustom < 28)] <- 1
+ 
+# create var for wet-frost
+# fun lag() from dplyr pkg. 
+
+Historical_all$wet_frost<-0
+Historical_all$wet_frost[which(Historical_all$TminCustom < 30 & lag(Historical_all$TmaxCustom > 32 & Historical_all$PrecipCustom > .08))] <- 1
+Future_all$wet_frost<-0
+Future_all$wet_frost[which(Future_all$TminCustom < 30 & lag(Future_all$TmaxCustom > 32 & Future_all$PrecipCustom > .08))] <- 1
+
+# Start calculating green-up -- last date after 6 days with tmean > 5C
+#Julian day
+Historical_all$Julian<-yday(Historical_all$Date)
+Future_all$Julian<-yday(Future_all$Date)
+
+# tmean_C
+Historical_all$Tmean_C<-(Historical_all$Tmax_C+Historical_all$Tmin_C)/2
+Future_all$Tmean_C<-(Future_all$Tmax_C+Future_all$Tmin_C)/2
+
+# recalc GDD as tmean_C > 5
+Historical_all$GDD<-0
+Historical_all$GDD[which(Historical_all$Tmean_C > 5)] <- 1
+Future_all$GDD<-0
+Future_all$GDD[which(Future_all$Tmean_C > 5)] <- 1
+
+# count consecutive GDD
+Historical_all$GDD_count<-0
+Historical_all$GDD_count<- (Historical_all$GDD) * unlist(lapply(rle(Historical_all$GDD)$lengths, seq_len))
+Future_all$GDD_count<-0
+Future_all$GDD_count<- (Future_all$GDD) * unlist(lapply(rle(Future_all$GDD)$lengths, seq_len))
+
+# count consecutive non-GDD
+Historical_all$N_GDD_count<- 0
+Historical_all$N_GDD_count<- (Historical_all$GDD == 0) * unlist(lapply(rle(Historical_all$GDD)$lengths, seq_len))
+Future_all$N_GDD_count<- 0
+Future_all$N_GDD_count<- (Future_all$GDD == 0) * unlist(lapply(rle(Future_all$GDD)$lengths, seq_len))
+
+# return Julian date of first 7 each year, for each GCM
+Historical_GS <- as.data.table(subset(Historical_all,select=c(Year,Julian,GDD_count,N_GDD_count)))
+Historical_GU<-Historical_GS[GDD_count==7,.SD[1],by=.(Year)] 
+
+Future_GS <- as.data.table(subset(Future_all,select=c(Year,GCM,Julian,GDD_count,N_GDD_count)))
+Future_GU<-Future_GS[GDD_count==7,.SD[1],by=.(Year,GCM)] 
+
+# return Julian date of end growing season
+# Historical_SE<-Historical_GS[GDD_count==6,.SD[c(.N)],by=.(Year,GCM)]
+Historical_SE<-Historical_GS[N_GDD_count==6,.SD[c(.N)],by=.(Year)]
+Historical_SE$adjusted<-Historical_SE$Julian - 6
+Future_SE<-Future_GS[N_GDD_count==6,.SD[c(.N)],by=.(Year,GCM)]
+Future_SE$adjusted<-Future_SE$Julian - 6
+
+# Create annual dataframe to hold annually aggregated variables
+Hist_t2_annual<-aggregate(cbind(Julian)~Year,data=Historical_GU,mean,na.rm=TRUE)
+colnames(Hist_t2_annual)[2] <- "BegGrow"
+Hist_t2_annual<-cbind(Hist_t2_annual,Historical_SE$adjusted)
+colnames(Hist_t2_annual)[3] <- "EndGrow"
+Hist_t2_annual$GrowLen<- Hist_t2_annual$EndGrow - Hist_t2_annual$BegGrow
+
+Fut_t2_annual<-aggregate(cbind(Julian)~GCM+Year,data=Future_GU,mean,na.rm=TRUE)
+colnames(Fut_t2_annual)[3] <- "BegGrow"
+Fut_t2_annual<-merge(Fut_t2_annual,Future_SE[,c("GCM","Year","adjusted")], by=c("Year","GCM"))
+colnames(Fut_t2_annual)[4] <- "EndGrow"
+Fut_t2_annual$GrowLen<- Fut_t2_annual$EndGrow - Fut_t2_annual$BegGrow
+
+rm(Historical_GS, Historical_GU, Historical_SE, Future_GS, Future_GU, Future_SE)
+
+F_other<-aggregate(cbind(OverPr1, OverPr.5, OverPr99, OverPr95,FT32, FTbuff, wet_frost)~GCM+Year, 
+                   data=Future_all, sum, na.rm=TRUE)
+H_other<-aggregate(cbind(OverPr1, OverPr.5, OverPr99, OverPr95,FT32, FTbuff, wet_frost)~Year, 
+                   data=Historical_all, sum, na.rm=TRUE)
+
+Fut_t2_annual<-merge(Fut_t2_annual,F_other,by=c("Year","GCM"))
+Fut_t2_annual<-merge(Fut_t2_annual,CF_GCM,by="GCM")
+
+Hist_t2_annual<-merge(Hist_t2_annual,H_other,by=c("Year"))
+
+rm(F_other, H_other)
+
 #### Create .xslx workbook with all data tables
 setwd(WD_plots)
 WriteXLS(c("Monthly_Precip_delta", "Monthly_Tmax_delta", "Monthly_Tmin_delta", "PrecipMax", "HeatMax", "ColdMax", "DroughtMax", "TotalOverHotTemp", "TotalOver95th", "TotalUnderColdTemp", "TotalUnder5th", "Future_Means"), 
