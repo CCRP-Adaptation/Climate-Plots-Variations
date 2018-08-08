@@ -24,6 +24,9 @@
 #setwd(WD_plots)
 library(ggplot2)
 library(plyr)
+library(lubridate)
+library(dplyr)
+library(forcats)
 library(reshape2)
 
 rm(list=ls())
@@ -40,6 +43,11 @@ FilePre <- paste(SiteID, Lat, Lon, "CF_", sep="_")
 FutureSubset <- c("Hot Wet","Warm Dry")          # Select two scenarios from the CFs vector specified in CMIP5_Parsing script. Names must match.
 Scenario1<-FutureSubset[1]
 Scenario2<-FutureSubset[2]
+
+## All 508-compliant color scheme -- navy (hot wet), light blue (warm wet), pink (warm dry), red (hot dry)
+colors5 <-   c("#12045C","#9A9EE5","#F3D3CB","#E10720","white")
+colors2<-c("#12045C","#F3D3CB") #navy - hot wet; pink - warm dry
+colors3 <- c("grey","#12045C","#F3D3CB")
 
 MP3<-subset(Monthly_Precip_delta, CF %in% FutureSubset)
 MP3$month<-factor(MP3$month,levels=c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
@@ -68,6 +76,25 @@ TU5thPercentile3<-subset(TotalUnder5th, CF %in% FutureSubset & timeframe == "Fut
 
 TO95thPercentileH<-subset(TotalOver95th, CF == "Historical")
 TO95thPercentile3<-subset(TotalOver95th, CF %in% FutureSubset & timeframe == "Future")
+
+#########
+#Summarize DETO data plots
+
+Fut_t2_annual<-subset(Fut_t2_annual, CF %in% FutureSubset); Fut_t2_annual$CF<-droplevels(Fut_t2_annual$CF)
+Hist_t2_annual<-cbind(GCM="Historical",Hist_t2_annual)
+Hist_t2_annual$CF<-as.factor("Historical") ; Hist_t2_annual$GCM<-droplevels(Hist_t2_annual$CF)
+t2.annual<-rbind(Fut_t2_annual,Hist_t2_annual)
+
+#names of columns in data frame
+cols <- names(t2.annual)
+# character variables
+cols.char<-c("BegGrow", "EndGrow", "GrowLen", "OverPr1","OverPr.5", "OverPr99", "OverPr95", 
+             "FT32", "FTbuff", "wet_frost")
+t2.annual[cols.char]<-sapply(t2.annual[cols.char],as.numeric)
+sapply(t2.annual,class)
+rm(cols, cols.char)
+
+t2.annual$CF<-factor(t2.annual$CF,levels=c("Historical",Scenario1, Scenario2), ordered=is.ordered(t2.annual$CF))
 
 ###############################################################working############################################
 
@@ -306,6 +333,118 @@ ggplot(TO95thPercentilemean, aes(x=CF, y=MeanOver95th, fill=CF)) +
   scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
 
 ggsave(paste(FilePre, "Days_Over_95thPercentile.png", sep=""), width = 15, height = 9)
+
+############################################################################
+##### New plots from DETO stuff
+
+# Green up
+
+ggplot(t2.annual, aes(x=CF, y=BegGrow, colour=CF)) + 
+  geom_boxplot(colour="black",aes(fill = factor(CF)))+ 
+  geom_jitter(colour="black", shape = 21, size = 5, aes(fill = factor(CF)), position=position_jitter(0.2)) +
+  theme(axis.text=element_text(size=16),
+        axis.title.x=element_text(size=16,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=1.0),
+        plot.title=element_text(size=24,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+  labs(title = "Average annual green-up date \n 2040 (2025-2055) vs 1950-1999",
+       x = "Historical & Future Climate Scenarios", y = "Julian date", colour = "Climate Future") +
+  scale_color_manual(name="",values = colors3) +
+  scale_fill_manual(name="",values = colors3)
+
+ggsave(paste(FilePre, "Green-up dates.png", sep=""), width = 15, height = 9)
+
+# Freeze-thaw
+t<-aggregate(FTbuff~CF,data=t2.annual,mean,na.rm=TRUE)
+ggplot(t, aes(x=CF,y=FTbuff,fill=CF)) +
+  geom_bar(stat="identity",position="dodge",colour="black") +
+  theme(axis.text=element_text(size=10),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.8),
+        plot.title=element_text(size=24,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+  labs(title = "Freeze-thaw cycles \n Historical (1950-1999) & Future (2025-2055)", 
+       x = "Historical & Future Climate Scenarios", y = "Days")  +
+  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #   panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  scale_fill_manual(name="",values =colors3)
+
+ggsave(paste(FilePre, "Freeze-thaw cycles.png", sep=""), width = 15, height = 9)
+
+# Wet-frost
+t<-aggregate(wet_frost~CF,data=t2.annual,mean,na.rm=TRUE)
+ggplot(t, aes(x=CF,y=wet_frost,fill=CF)) +
+  geom_bar(stat="identity",position="dodge",colour="black") +
+  theme(axis.text=element_text(size=10),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.8),
+        plot.title=element_text(size=24,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+    labs(title = "Wet-frost cycles \n Historical (1950-1999) & Future (2025-2055)", 
+       x = "Historical & Future Climate Scenarios", y = "Days")  +
+  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #   panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  scale_fill_manual(name="",values =colors3)
+
+ggsave(paste(FilePre, "Wet-frost cycles.png", sep=""), width = 15, height = 9)
+
+#Pr99
+t<-aggregate(OverPr99~CF,data=t2.annual,mean,na.rm=TRUE)
+ggplot(t, aes(x=CF,y=OverPr99,fill=CF)) +
+  geom_bar(stat="identity",position="dodge",colour="black") +
+  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.8),
+        plot.title=element_text(size=18,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+  labs(title = paste(SiteID, " - Days/Yr with Precip > Historical 99th Percentile (", round(highpr99, 2), " inch) in 2040", sep=""), 
+       x = "Historical & Future Climate Scenarios", y = "Days")  +
+  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #   panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  scale_fill_manual(name="",values =colors3)
+
+#Pr1
+t<-aggregate(OverPr1~CF,data=t2.annual,mean,na.rm=TRUE)
+ggplot(t, aes(x=CF,y=OverPr1,fill=CF)) +
+  geom_bar(stat="identity",position="dodge",colour="black") +
+  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.8),
+        plot.title=element_text(size=18,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+  labs(title = paste(SiteID, " - Days/Yr with Precip > 1 inch in 2040", sep=""), 
+       x = "Historical & Future Climate Scenarios", y = "Days")  +
+  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #   panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  scale_fill_manual(name="",values =colors3)
+
+ggsave(paste(FilePre, "Days over Pr1.png", sep=""), width = 15, height = 9)
+
+#Pr.5
+t<-aggregate(OverPr.5~CF,data=t2.annual,mean,na.rm=TRUE)
+ggplot(t, aes(x=CF,y=OverPr.5,fill=CF)) +
+  geom_bar(stat="identity",position="dodge",colour="black") +
+  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.8),
+        plot.title=element_text(size=18,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+  labs(title = paste(SiteID, " - Days/Yr with Precip > 1/2 inch in 2040", sep=""), 
+       x = "Historical & Future Climate Scenarios", y = "Days")  +
+  #theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  #   panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  scale_fill_manual(name="",values =colors3)
+
+ggsave(paste(FilePre, "Days over Pr.5.png", sep=""), width = 15, height = 9)
+
+# Growing season length
+t<-aggregate(GrowLen~CF,data=t2.annual,mean,na.rm=TRUE)
+ggplot(t, aes(x=CF,y=GrowLen,fill=CF)) +
+  geom_bar(stat="identity",position="dodge",colour="black") +
+  theme(axis.text=element_text(size=10),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.8),
+        plot.title=element_text(size=24,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20)) +
+  labs(title = "Number of days in growing season \n Historical (1950-1999) & Future (2025-2055)", 
+       x = "Historical & Future Climate Scenarios", y = "Days", colour = "Climate Future")  +
+  scale_fill_manual(name="",values = colors3) 
+
+ggsave(paste(FilePre, "Growing season length.png", sep=""), width = 15, height = 9)
 
     ###### Summary differences  ######
     ## Do these calcs only on subset files - non-subset files include historical data!!
