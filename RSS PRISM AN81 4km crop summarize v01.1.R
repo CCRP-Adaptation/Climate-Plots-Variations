@@ -23,28 +23,20 @@ rm(list = ls())
 #############  Initialize   ##############
 
     #  for output file names
-
 SiteID <- "BIBE"  # identifier.  Use "" if not desired
 
-  # COLM:  39.0625, -108.6875
-  # HOBE:  32.9375  -85.6875
-  # WHSA:  32.8125, -106.3125
-  # SAAN:  29.3125, -98.5625
-  # BIBE:  29.1875, -103.5625
-  # use center coordinate ONLY: .0625, .1875, .3125, .4375, .5625, .6875, .8125, .9375
-Lat=   29.1875
+    # Coordinates for cell center. Cell size is 0.04166 for 4-km dataset, .008333 for 800-m dataset. 
+Lat = 29.1875
 Lon = -103.5625
 
-Buffer <- 0.06    # dec degree.  Cell size is 0.04166
+Buffer <- 0.06    # dec degree.  
 
 BeginYr = 1895
-EndYr =  2015      # some 2015 files are provisional
+EndYr =  2017      
 EndMo = 12
 Day = 15          # in output files, day of month in Date variable (req by strptime)
 
-          #  Root Out File Dir MUST exist - can only create final subdirectory (not root of this)
-#WinDataDir <- "F:/PRISM"
-#WinOFDir <- "D:/CHOH RSS/Figs PRISM"   
+          #  Root Out File Dir MUST exist - can only create final subdirectory (not root of this)   
 WinDataDir <- "E:/PRISM4k_AN81M2"
 WinOFDir <- "~/RSS Plots/BIBE/Figs PRISM"
 
@@ -71,7 +63,7 @@ rm(WinDataDir, WinOFDir,MacDataDir,MacOFDir)
 #TminDir <- paste(DataDir, "/tmin/bil/", sep = "")
 #TmaxDir <- paste(DataDir, "/tmax/bil/", sep = "")
 
-    #   Seagate 4TB
+    #   Seagate 4TB/Drobo
 PptDir <- paste(DataDir, "/ppt/", sep = "")
 TminDir <- paste(DataDir, "/tmin/", sep = "")
 TmaxDir <- paste(DataDir, "/tmax/", sep = "")
