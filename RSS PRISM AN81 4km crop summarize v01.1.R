@@ -37,7 +37,7 @@ EndMo = 12
 Day = 15          # in output files, day of month in Date variable (req by strptime)
 
           #  Root Out File Dir MUST exist - can only create final subdirectory (not root of this)   
-WinDataDir <- "E:/PRISM4k_AN81M2"
+WinDataDir <- "F:/ClimateData/PRISM/PRISM_LT81m_800m"  #Drobo drive containing 800-m resolution 2017 data
 WinOFDir <- "~/RSS Plots/BIBE/Figs PRISM"
 
 OPath1 <-"/Volumes/Seagate1_Blue2TB/COLM RSS/Figs PRISM/"
@@ -76,7 +76,7 @@ AoaExt <- extent(Lon-Buffer, Lon+Buffer, Lat-Buffer, Lat+Buffer)
 GetFileNames <- function(DataDirectoryName){  
   files <- list.files(DataDirectoryName)
   
-  afiles <- files[nchar(files) > 36]   # only files with month and "stable"
+  afiles <- files[nchar(files) > 26]  
   bFiles <- afiles[grep("^[_a-zA-Z0-9]+\\.bil$", afiles)]   # files ending with.bil 
   return(bFiles)
 }
@@ -134,21 +134,21 @@ GetSeason <- function(DateVec){
 
 names(PptMeans)[2] <- "Ppt"
 PptMeans$File <- as.character(PptMeans$File)
-PptMeans$YearMon <- substring(PptMeans$File[], nchar(PptMeans$File[])-13,nchar(PptMeans$File[])-8)
+PptMeans$YearMon <- substring(PptMeans$File[], nchar(PptMeans$File[])-9,nchar(PptMeans$File[])-4)
 PptMeans$Date <- strptime(paste(PptMeans$YearMon, Day, sep=""), "%Y%m%d")
 Season <- GetSeason(PptMeans$Date)
 PptMeans<- cbind(PptMeans, Season)
 
 names(TminMeans)[2] <- "Tmin"
 TminMeans$File <- as.character(TminMeans$File)
-TminMeans$YearMon <- substring(TminMeans$File[], nchar(TminMeans$File[])-13,nchar(TminMeans$File[])-8)
+TminMeans$YearMon <- substring(TminMeans$File[], nchar(TminMeans$File[])-9,nchar(TminMeans$File[])-4)
 TminMeans$Date <- strptime(paste(TminMeans$YearMon, Day, sep=""), "%Y%m%d")
 Season <- GetSeason(TminMeans$Date)
 TminMeans<- cbind(TminMeans, Season)
                            
 names(TmaxMeans)[2] <- "Tmax"
 TmaxMeans$File <- as.character(TmaxMeans$File)
-TmaxMeans$YearMon <- substring(TmaxMeans$File[], nchar(TmaxMeans$File[])-13,nchar(TmaxMeans$File[])-8)
+TmaxMeans$YearMon <- substring(TmaxMeans$File[], nchar(TmaxMeans$File[])-9,nchar(TmaxMeans$File[])-4)
 TmaxMeans$Date <- strptime(paste(TmaxMeans$YearMon, Day, sep=""), "%Y%m%d")
 Season <- GetSeason(TmaxMeans$Date)
 TmaxMeans<- cbind(TmaxMeans, Season)
