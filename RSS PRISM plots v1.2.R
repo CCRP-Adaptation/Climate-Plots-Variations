@@ -25,27 +25,19 @@ RDataFile <- "WHSA_32.8125_-106.3125_PRISM_PptTminTmax_IntermediateFiles.RData"
 WinDataDir <- "~/RSS Plots/BIBE/Figs PRISM"
 WinOFDir <- "~/RSS Plots/BIBE/Figs PRISM"
 
-DP1 <- "/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs PRISM/"
-DP2 <- "/Volumes/Seagate1_Blue2TB/Projects/RSS Climate/HOBE/"
+WinSource <- "E:/Backup_daily/R/TwoPolys_function.R"
+MacDataDir <- "/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs PRISM/"
+MacOFDir <-  "/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs PRISM/"
+MacSource <- "~johng/R/functions/twoPolys_function.R"
 
-OFP1 <- "/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs PRISM/"
-
-SP1 <- "~johng/R/functions/twoPolys_function.R"
-SP2 <- "D:/R/functions/TwoPolys_function.R"
-SP3 <- "E:/Backup_daily/R/TwoPolys_function.R"
-
-MacDataDir <- DP1
-MacOFDir <-  DP1
-MacSource <- SP1
-
-WinSource <- SP3
-
+doP1 <- "YES"  # Should a separate regression be calculated for the reference period (default 1900-1970)? 
+doP2 <- "YES"  # Should a separate regression be calculate for the period after the reference period (default 1971-present)? 
 beginRefYr = 1900
 endRefYr = 1970
 
 BeginYr	= 1895   # is this data file or for plots?
-EndYr = 2016
-dataEndYr = 2016   # needed for rolling mean plot below.  
+EndYr = 2017
+dataEndYr = 2017   # needed for rolling mean plot below.  
 stepYrs	= 10		  # for period plots 
 rollLen = 10      # period of calc for rolling average; default 10 = decadal
 
@@ -80,7 +72,7 @@ DoYrMon <- function(YrMon){    #  YrMon = char vector of year mon as 189501.  Re
 setwd(DataDir)
 dte = Sys.Date()
     # clean up trashy namespace
-rm(DF1, DF2, DF3, DP1, DP2, OFP1,  SP1, SP2, MacDataDir, MacOFDir)
+rm(WinDataDir, WinOFDir, MacDataDir, MacOFDir)
     #baseData is foundational dataset for most plots
 yrMons<- data.frame(DoYrMon(PptMeans$YearMon))
 baseData <- cbind(yrMons, seas=PptMeans$Season, tmin=TminMeans$TminF, tmax=TmaxMeans$TmaxF, 
@@ -107,12 +99,10 @@ names(pptRef) <- "ppt"
 
 ######################  Periods of Analysis  ######################
 
-doP1 <- "YES"
-doP2 <- "YES"
-p1_start  = 1900
-p1_end    = 1970
-p2_start  = 1970
-p2_end    = 2016
+p1_start  = beginRefYr
+p1_end    = endRefYr
+p2_start  = endRefYr
+p2_end    = EndYr
 	
 yrAvgs$tmaxP1 <- yrAvgs$tmaxAvg
 yrAvgs$tmaxP1[which(yrAvgs$cYr < p1_start | yrAvgs$cYr > p1_end)] = NA
