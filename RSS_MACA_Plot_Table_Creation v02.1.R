@@ -70,6 +70,8 @@ Seasonal_Precip_delta$CF = factor(Seasonal_Precip_delta$CF,
 
 ###### TOTAL & CONSECUTIVE DAYS OVER/UNDER THRESHOLD TEMPs ######
 
+HistYears = Hist_EndYear - Hist_StartYear + 1
+
 #### Historical
 Historical_all$Over_HotTemp = Historical_all$TmaxCustom > HotTemp
 Hist_Total_HotTemp_Days = as.numeric(sum(Historical_all$Over_HotTemp)/HistYears)
