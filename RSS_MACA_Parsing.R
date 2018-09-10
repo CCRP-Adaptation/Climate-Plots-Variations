@@ -59,7 +59,6 @@ CFs = c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry") #Use spaces and
 
 Year = 2040
 Range = 30
-HistYears = 56
 
 #Directory where output tables will be saved
 OutDir = "C:/Users/arcarlson/Documents/RSS/Parks/SAGU"
