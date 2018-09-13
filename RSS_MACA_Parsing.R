@@ -1,7 +1,7 @@
 #######################################################################################
 # Script for extracting MACA data from NetCDF files and formatting data for RSS plots
 # Inputs: NetCDF files containing MACA-downscaled GCM projections, coordinates of desired grid cell, vector of desired GCMs, and year range to be extracted.
-# Outputs: Daily time series of pr, tasmax, and tasmin, formatted Baseline_all and Future_all tables 
+# Outputs: Daily time series of pr, tasmax, and tasmin, contained in Baseline_all and Future_all tables 
 #######################################################################################
 
 library(RColorBrewer)
