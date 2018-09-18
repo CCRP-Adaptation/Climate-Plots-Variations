@@ -52,6 +52,9 @@ ColdTemp = 32    # deg F
 PrecipThreshold = 0.05    # inches per day. Precip Threshold (used to measure Drought duration). For many GCMs shoud not 
 #  be 0 because models "drizzle". Some investigation necessary.
 
+QuantileLow = 0.05
+QuantileHigh = 0.95
+
 CFLow = 0.25     # Threshold percentages for defining Climate futures. Default low/high:  0.25, 0.75
 CFHigh = 0.75
 CFs = c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry") #Use spaces and characters only
