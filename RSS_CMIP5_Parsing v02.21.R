@@ -46,9 +46,13 @@ HistYears = 50  # 1950-1999. Not editable at this time.
 
 
 HotTemp = 95    # deg F. Default should be about 100 deg F
-ColdTemp          = 32    # deg F
+ColdTemp = 32    # deg F
 PrecipThreshold = 0.05    # inches per day. Precip Threshold (used to measure Drought duration). For many GCMs shoud not 
-                          #  be 0 because models "drizzle". Some investigation necessary.
+
+QuantileLow = 0.05   #Quantile for comparing historical to future cold days. If value is 0.05, script will calculate change in days below the historical 5th percentile Tmin.
+QuantileHigh = 0.95   #Quantile for comparing historical to future hot days. If value is 0.95, script will calculate change in days above the historical 95th percentile Tmax.
+
+#  be 0 because models "drizzle". Some investigation necessary.
 CFLow = 0.25     # Threshold percentages for defining Climate futures. Default low/high:  0.25, 0.75
 CFHigh = 0.75
 
