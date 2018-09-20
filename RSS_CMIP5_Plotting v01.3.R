@@ -32,28 +32,6 @@ scatter + geom_point(aes(color=emissions),size=4) +
 
 ggsave(sprintf("%s_%s_%s_GCM_Scatter_Plot.png", SiteID, Lat, Lon), width = 15, height = 9)
 
-###Scatter plot showing delta precip and tavg, color by emissions scenario, with box for all 3 CF's
-scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr))
-scatter + geom_point(aes(color=emissions),size=4) + 
-  theme(axis.text=element_text(size=20),
-        axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=24,face="bold",vjust=2),
-        legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
-  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
-            x = "Change in annual average temperature (F)", 
-            y = "Change in average annual precipitation (in)")) +
-  scale_colour_manual(values=c("blue", "red"))+
-  guides(color=guide_legend(title="Emissions\nScenarios\n")) +
-  geom_rect(xmin=Tavg, xmax=Tavg100, ymin=365*PrAvg, ymax=365*Pr100, color = "red", alpha=0, size=1) + 
-  geom_rect(xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75, color = "yellow", alpha=0, size=1) +
-  geom_rect(xmin=Tavg0, xmax=Tavg, ymin=365*Pr0, ymax=365*PrAvg, color = "blue", alpha=0, size=1) +
-  geom_hline(aes(yintercept=365*mean(Future_Means$DeltaPr)),linetype=2) + 
-  geom_vline(aes(xintercept=mean(Future_Means$DeltaTavg)),linetype=2)  
-#scale_y_continuous(limits=c(-3.75,3.75))
-
-ggsave(sprintf("%s_%s_%s_GCM_Scatter_Plot_3CFs.png", SiteID, Lat, Lon), width = 15, height = 9)
-
 ###Scatter plot showing delta precip and tavg, color by emissions scenario, x-axis scaled 0-max
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
 scatter + geom_point(aes(color=emissions),size=4) + 
