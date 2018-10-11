@@ -144,6 +144,7 @@ monAvg$mon <- seq(1:12)
 monAvg$monNames <- c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
 tmaxq <- tapply(baseData$tmax, baseData$mon, quantile)
 tminq <- tapply(baseData$tmin, baseData$mon, quantile)
+pptq <- tapply(baseData$ppt, baseData$mon, quantile)
 
 for(i in 1:12){
 	q <- tmaxq[[i]]
@@ -153,20 +154,28 @@ for(i in 1:12){
 	q <- tminq[[i]]
 	monAvg$tmin25[i] <- q[2]
 	monAvg$tmin75[i] <- q[4]
+	
+		q <- pptq[[i]]
+	monAvg$ppt25[i] <- q[2]
+	monAvg$ppt75[i] <- q[4]
 }
 
 PlotName <- "Avg Monthly Tmin Tmax Ppt"
 OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, sep = "")		 
 
 png(paste(OFName, ".png", sep=""), width=6.5*dpi, height=4.5*dpi, res=dpi)
-par(mar=c(5,5,2,5))
+par(mar=c(5,7,7,7))
 attach(monAvg)
 plot(tmax75~mon,
+     main = list("PRISM Monthly Mean Tmax/Tmin and Precip", cex=2),
      type="l", col="red", lty=2, lwd=2,
      xlab=NA,
      ylab=expression(paste(Temperature, ~({}^o*F))),
      ylim=c(0,110),
-     xaxt='n')
+     xaxt='n',
+     cex.lab = 2, 
+     ps = 2
+)
 lines(tmax25~mon, col="red", lty=2, lwd=2)
 lines(tmaxMon~mon, col="red", lwd=3)
 lines(tmin75~mon, col="blue", lty=2, lwd=2) 
@@ -176,10 +185,13 @@ par(new = T)
 Ppt <- barplot(pptMon, names.arg=monNames, 
                xlab="Month", ylab=NA, axes=FALSE,
                ylim=c(0,20),
-               border=NA)
-segments(Ppt, pptMon - pptMonSD, Ppt, pptMon + pptMonSD)
+               border=NA,
+	       col = "light blue", 
+               cex.lab=2
+)
+segments(Ppt, ppt25, Ppt, ppt75)
 axis(side=4)
-mtext(side=4, line=3, "Precip (in/mon)")
+mtext(side=4, line=3, "Precip (in/mon)", cex=2)
 detach(monAvg)
 dev.off()							
 
