@@ -2,6 +2,7 @@
 #   John Gross   
 #   Inputs:  rData output from RSS parse script
 
+#  v1.5 - Converted all plots to ggplot except for Avg Monthly Tmin Tmax Precip, updated plot titles and captions.
 #  v1.4 - Revised monthly average Tmax/Tmin/Ppt plots. Uses separate axes to improve visibility of ppt bar plot, 
 #         added std. dev. bars to ppt bar plot, and changed x-axis labels to month abbreviations. 
 #  v1.3 - Includes PRISM data up to 2016, edited code to easily change data end year (May 2017)
@@ -15,22 +16,21 @@ library(plotrix)
 library(zoo)		# for rollmean
 library(ggplot2)
 library(grid)
+library(cowplot)
+library(reshape2)
 
 rm(list=ls())
     #  Load data file ONLY if not following previous script
-RDataFile <- "WHSA_32.8125_-106.3125_PRISM_PptTminTmax_IntermediateFiles.RData"
+RDataFile <- "JECA_43.75_-103.83_PRISM_PptTminTmax_IntermediateFiles.RData"
 #################################################
 # DataDir = location of .RData file
 # OFDir   = location where output (plots) files will be written. End with /
-# Source  = location of twoPolys_function.R file
 
-WinDataDir <- "~/RSS Plots/BIBE/Figs PRISM"
-WinOFDir <- "~/RSS Plots/BIBE/Figs PRISM"
+WinDataDir <- "~/RSS/Parks/JECA/Figs PRISM"
+WinOFDir <- "~/RSS/Parks/JECA/Figs PRISM"
 
-WinSource <- "E:/Backup_daily/R/TwoPolys_function.R"
 MacDataDir <- "/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs PRISM/"
 MacOFDir <-  "/Volumes/Seagate1_Blue2TB/CHOH RSS/Figs PRISM/"
-MacSource <- "~johng/R/functions/twoPolys_function.R"
 
 doP1 <- "YES"  # Should a separate regression be calculated for the reference period (default 1900-1970)? 
 doP2 <- "YES"  # Should a separate regression be calculate for the period after the reference period (default 1971-present)? 
@@ -38,24 +38,39 @@ beginRefYr = 1900
 endRefYr = 1970
 
 BeginYr	= 1895   # is this data file or for plots?
-EndYr = 2017
-dataEndYr = 2017   # needed for rolling mean plot below.  
+EndYr = 2016
+dataEndYr = 2016   # needed for rolling mean plot below.  
 stepYrs	= 10		  # for period plots 
 rollLen = 10      # period of calc for rolling average; default 10 = decadal
 
-dpi = 600        
+dpi = 600    
+
+
+##ggplot theme for all plots
+#Theme for all plots
+PlotTheme = theme_gray() %+replace% 
+  theme(plot.title = element_text(size=18, face='bold', hjust=0.5, vjust=0.5),
+        axis.text.y = element_text(size = 16, colour="black"),
+        axis.title.y = element_text(size = 18, angle = 90, margin=margin(0,5,0,0)),
+        axis.text.x = element_text(size = 16, colour="black"),
+        axis.title.x = element_text(size = 18, margin=margin(5,0,0,0)),
+        legend.position = "none",
+        legend.title = element_text(size=16),
+        legend.text = element_text(size=16)
+  )
+
+theme_set(PlotTheme)
+TitleSize = theme_get()$plot.title$size  ##Needed for cowplot layouts
 
 #################   End of Initials  ##########################  
 
 if(.Platform$OS.type=="windows"){   
   DataDirInit <- WinDataDir
-  OFDirI <- WinOFDir
-  source(WinSource)}
+  OFDirI <- WinOFDir}
 
 if(.Platform$OS.type=="unix"){     # does not distinguish MacOS from others
   DataDirInit <- MacDataDir
-  OFDirI <- MacOFDir
-  source(MacSource)}
+  OFDirI <- MacOFDir}
 
 load(paste(DataDirInit,"/", RDataFile, sep=''))
 DataDir <- DataDirInit  # cludge because loaded file has defined DataDir
@@ -92,6 +107,7 @@ tmeanAvg = with(baseData, tapply(tmean, yr, mean))
 cYr <- BeginYr:EndYr
 yrAvgs <- data.frame(cYr, pptAvg, tminAvg, tmaxAvg, tmeanAvg)
 yrAvgs$tAvg <- (yrAvgs$tminAvg+yrAvgs$tmaxAvg)/2
+
 
   ## interesting to compare PRISM vs calcuated Tmean
 
@@ -130,7 +146,6 @@ yrAvgs$tmeanP2[which(yrAvgs$cYr < p2_start | yrAvgs$cYr > p2_end)] = NA
 yrAvgs$pptP2 <- yrAvgs$pptAvg
 yrAvgs$pptP2[which(yrAvgs$cYr < p2_start | yrAvgs$cYr > p2_end)] = NA
 
-
 	########################################
 	# Data check - plot min and max by month
 tmaxMon <- tapply(baseData$tmax, baseData$mon, mean)
@@ -155,7 +170,7 @@ for(i in 1:12){
 	monAvg$tmin25[i] <- q[2]
 	monAvg$tmin75[i] <- q[4]
 	
-		q <- pptq[[i]]
+	q <- pptq[[i]]
 	monAvg$ppt25[i] <- q[2]
 	monAvg$ppt75[i] <- q[4]
 }
@@ -164,34 +179,39 @@ PlotName <- "Avg Monthly Tmin Tmax Ppt"
 OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, sep = "")		 
 
 png(paste(OFName, ".png", sep=""), width=6.5*dpi, height=4.5*dpi, res=dpi)
-par(mar=c(5,7,7,7))
+par(mfrow=c(1,1), mgp=c(0,.5,0), mar=c(4,3.75,2,3.75))
 attach(monAvg)
-plot(tmax75~mon,
-     main = list("PRISM Monthly Mean Tmax/Tmin and Precip", cex=2),
+Ppt = barplot(pptMon, names.arg=monNames,
+        ylim=c(0, max(monAvg$ppt75)+.5),
+        axes=FALSE,
+        border=NA,
+        col=rgb(.678, .847, .902, alpha=0.6))
+segments(Ppt, ppt25, Ppt, ppt75, col="dark gray")
+axis(side=4)
+par(new = T)
+plot(tmax75~mon, 
      type="l", col="red", lty=2, lwd=2,
      xlab=NA,
-     ylab=expression(paste(Temperature, ~({}^o*F))),
-     ylim=c(0,110),
+     ylab=NA,
      xaxt='n',
-     cex.lab = 2, 
-     ps = 2
+     xlim=c(.5, 12.5),
+     ylim=c(0,110), 
+     ps = 2,
+     main=paste(SiteID, "- Monthly Climate Means", sep="") 
 )
 lines(tmax25~mon, col="red", lty=2, lwd=2)
 lines(tmaxMon~mon, col="red", lwd=3)
 lines(tmin75~mon, col="blue", lty=2, lwd=2) 
 lines(tmin25~mon, col="blue", lty=2, lwd=2)
 lines(tminMon~mon, col="blue", lwd=3)
-par(new = T)
-Ppt <- barplot(pptMon, names.arg=monNames, 
-               xlab="Month", ylab=NA, axes=FALSE,
-               ylim=c(0,20),
-               border=NA,
-	       col = "light blue", 
-               cex.lab=2
-)
-segments(Ppt, ppt25, Ppt, ppt75)
-axis(side=4)
-mtext(side=4, line=3, "Precip (in/mon)", cex=2)
+
+axis(side=2)
+mtext(side=1, line=1.75, "Month")
+mtext(side=2, line=2, expression(paste(Temperature, ~({}^o*F))))
+mtext(side=4, line=2, "Precip (in)")
+mtext(side=1, line=2.75, paste("Dashed lines/error bars = 25th-75th percentile ranges. Data range = ", BeginYr, "-", EndYr, ".", sep=""), cex=0.75, adj=0.5)
+legend("topleft", legend=c("Tmax", "Tmin"), col=c("red", "blue"), lwd=c(2,2), cex=0.75, bty="n")
+legend(.4, 103, legend=c("Precip"), fill=c("light blue"), border=c(NA), cex=0.75, bty="n")
 detach(monAvg)
 dev.off()							
 
@@ -211,68 +231,57 @@ names(rDat)[1] <- "cYr"
 rDat$yr <- rDat$cYr
 yrAvgs <- merge(rDat, yrAvgs, all=TRUE)
 
-
+##ggplot
 PlotName <- "10-yr Running Means"
-a <- ggplot(aes(cYr, tmaxAvg), data=yrAvgs) + geom_line() + geom_point() +
-  theme(axis.text.y = element_text(size = 12, colour="black")) +
-  theme(axis.title.y = element_text(size = 12, angle = 90)) +
-  theme(axis.text.x = element_text(size =12, colour="black")) +
-  
+
+#Colors for running means
+RMColors = scale_color_manual(name="", values=c("brown", "black", "#3366FF"))
+
+a <- ggplot(aes(x=cYr), data=yrAvgs) + 
+  geom_line(aes(y=tmaxAvg, group=1, col="Annual means"), na.rm=TRUE) + 
+  geom_point(aes(y=tmaxAvg, col="Annual means"), na.rm=TRUE) +
   ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y=29, label="A")) +
-  geom_smooth(method="lm")+ 
-  geom_line(aes(cYr, rTmax), size=1.5, colour="brown")
+  geom_smooth(method="lm", aes(y=tmaxAvg, group=2, col="Regression trend"), na.rm=TRUE)+ 
+  geom_line(aes(y=rTmax, group=3, col=paste(rollLen, "-yr running mean", sep="")), size=1.5, na.rm=TRUE) +
+  RMColors +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-b <- ggplot(aes(cYr, tminAvg), data=yrAvgs) + geom_line() + geom_point() +
-  theme(axis.text.y = element_text(size = 12, colour="black")) +
-  theme(axis.title.y = element_text(size = 12, angle = 90)) +
-  theme(axis.text.x = element_text(size =12, colour="black")) +
-  
+b <- ggplot(aes(cYr, tminAvg), data=yrAvgs) + geom_line(na.rm=TRUE) + geom_point(na.rm=TRUE) +
   ylab(expression(paste(Tmin, ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y= 13.5, label = "B")) +
-  geom_smooth(method="lm")+
-  geom_line(aes(cYr, rTmin), size=1.5, colour="brown")
+  geom_smooth(method="lm", na.rm=TRUE)+
+  geom_line(aes(cYr, rTmin), size=1.5, colour="brown", na.rm=TRUE) + 
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-c <- ggplot(aes(cYr, tmeanAvg), data=yrAvgs) + geom_line() + geom_point() +
-  theme(axis.text.y = element_text(size = 12, colour="black")) +
-  theme(axis.title.y = element_text(size = 12, angle = 90)) +
-  theme(axis.text.x = element_text(size =12, colour="black")) +
-  
+c <- ggplot(aes(cYr, tmeanAvg), data=yrAvgs) + geom_line(na.rm=TRUE) + geom_point(na.rm=TRUE) +
   ylab(expression(paste(Tmean, ~({}^o*F)))) + xlab("") +
   # geom_text(aes(x=1895, y= 13.5, label = "B")) +
-  geom_smooth(method="lm")+
-  geom_line(aes(cYr, rTmean), size=1.5, colour="brown")
+  geom_smooth(method="lm", na.rm=TRUE)+
+  geom_line(aes(cYr, rTmean), size=1.5, colour="brown", na.rm=TRUE) +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-d <- ggplot(aes(cYr, pptAvg), data=yrAvgs) + geom_line() + geom_point() +
-  theme(axis.text.y = element_text(size = 12, colour="black")) +
-  theme(axis.title.y = element_text(size = 12, angle = 90)) +
-  theme(axis.text.x = element_text(size =12, colour="black")) +
-  
-  ylab("Precip (in/yr)") + xlab("Year") +
+d <- ggplot(aes(cYr, pptAvg), data=yrAvgs) + geom_line(na.rm=TRUE) + geom_point(na.rm=TRUE) +
+  ylab("Precip (in/yr)") + xlab("") +
   # geom_text(aes(x=1895, y=350, label = "C")) +
-  geom_smooth(method="lm")+
-  geom_line(aes(cYr, rPpt), size=1.5, colour="brown")
+  geom_smooth(method="lm", na.rm=TRUE)+
+  geom_line(aes(cYr, rPpt), size=1.5, colour="brown", na.rm=TRUE) + 
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-				
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(4,1)))
-vplayout<- function(x,y)
-	viewport(layout.pos.row=x, layout.pos.col=y)
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-print(c, vp=vplayout(3,1))
-print(d, vp=vplayout(4,1))
+p1 = plot_grid(a, b, c, d, nrow=4, align="v")
+title = ggdraw() + draw_label(paste(SiteID, " - Annual Means and Trends", sep=""), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+legend = get_legend(a + theme(legend.position = "bottom"))
+p2 = plot_grid(title, p1, legend, ncol=1, rel_heights=c(0.05, 1, .05))
+p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard error of predicted y's \nData range = ", BeginYr, "-", EndYr, sep=""), 
+             y=0.5, hjust=0.5, vjust=0.5, size=12)
+ggdraw(p3)
 
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8.5, height=8.5, dpi=dpi)
 
-OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-png(OFName, width=6.5*dpi, height = 8.5*dpi)
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(4,1)))
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-print(c, vp=vplayout(3,1))
-print(d, vp=vplayout(4,1))
-dev.off()   
+##########################
+
 
 #-----------------------------------------------------------#
 #            ANNUAL AVERAGE LINES WITH REGRESSION           #
@@ -283,106 +292,82 @@ dev.off()
 
 		# gray zone is 95% confidence interval
 
+PlotName = "Annual Means Lines Regressions"
+
 a <- ggplot(yrAvgs) +		#  attach only data frame in ggplot call
-			geom_smooth(method = lm, aes(cYr, tmaxAvg)) +
-			geom_line(aes(cYr, tmaxAvg)) + geom_point(aes(cYr, tmaxAvg)) +
-      theme(axis.text.x = element_text(size = 12, colour="black")) +
-			theme(axis.text.y = element_text(size = 12, colour="black")) +
-			theme(axis.title.y = element_text(size = 12, angle = 90)) +		
-      ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("") 
+			geom_smooth(method = lm, aes(cYr, tmaxAvg), na.rm=TRUE) +
+			geom_line(aes(cYr, tmaxAvg), na.rm=TRUE) + geom_point(aes(cYr, tmaxAvg), na.rm=TRUE) +
+      ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("") +
+      scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
           #	geom_line(aes(cYr, rTmax), colour = 'red', size=1)}  # rolling mean
 
-      if(doP1 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP1))
-      if(doP2 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP2))
+      if(doP1 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP1), na.rm=TRUE)
+      if(doP2 == "YES")a <- a + geom_smooth(method = lm, aes(cYr, tmaxP2), na.rm=TRUE)
 
 	
-b <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tminAvg)) + geom_point(aes(cYr, tminAvg)) +
-    theme(axis.text.x = element_text(size = 12, colour="black")) +	
-   theme(axis.text.y = element_text(size = 12, colour="black")) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-		
+b <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tminAvg), na.rm=TRUE) + geom_point(aes(cYr, tminAvg), na.rm=TRUE) +
 		ylab(expression(paste(Tmin, ~({}^o*F)))) + xlab("") +
 		# geom_text(aes(x=1895, y= 13.5, label = "B")) +
-		geom_smooth(aes(cYr, tminAvg), method="lm") 
+		geom_smooth(aes(cYr, tminAvg), method="lm", na.rm=TRUE) +
+    scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
         # geom_line(aes(cYr, rTmin), colour = 'blue', size=1)
 
-      if(doP1 == "YES")(b <- b +	geom_smooth(method = lm, aes(cYr, tminP1)))
-			if(doP2 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP2)) 
+      if(doP1 == "YES")(b <- b +	geom_smooth(method = lm, aes(cYr, tminP1), na.rm=TRUE))
+			if(doP2 == "YES")b <- b +	geom_smooth(method = lm, aes(cYr, tminP2), na.rm=TRUE) 
 						
-c <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tmeanAvg)) + geom_point(aes(cYr, tmeanAvg)) +
-    theme(axis.text.x = element_text(size = 12, colour="black")) +	
-    theme(axis.text.y = element_text(size = 12, colour="black")) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-		
+c <- ggplot(data=yrAvgs) + geom_line(aes(cYr, tmeanAvg), na.rm=TRUE) + geom_point(aes(cYr, tmeanAvg), na.rm=TRUE) +
 		ylab(expression(paste(Tmean, ~({}^o*F)))) + xlab("") +
 		# geom_text(aes(x=1895, y= 13.5, label = "B")) +
-		geom_smooth(aes(cYr, tmeanAvg), method="lm") 
-		    # geom_line(aes(cYr, rTmean), colour = 'black', size=1)
+		geom_smooth(aes(cYr, tmeanAvg), method="lm", na.rm=TRUE) +
+		    # geom_line(aes(cYr, rTmean), colour = 'black', size=1) 
+    scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-    if(doP1 == "YES")c <- c + geom_smooth(method = lm, aes(cYr, tmeanP1)) 	
-    if(doP2 == "YES") c <- c + geom_smooth(method = lm, aes(cYr, tmeanP2)) 
+    if(doP1 == "YES")c <- c + geom_smooth(method = lm, aes(cYr, tmeanP1), na.rm=TRUE) 	
+    if(doP2 == "YES") c <- c + geom_smooth(method = lm, aes(cYr, tmeanP2), na.rm=TRUE) 
 
-d <- ggplot(data=yrAvgs) + geom_line(aes(cYr, pptAvg)) + geom_point(aes(cYr, pptAvg)) +
-    theme(axis.text.x = element_text(size = 12, colour="black")) +	
-    theme(axis.text.y = element_text(size = 12, colour="black")) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-				
-		ylab("Precipitation (in/yr)") + xlab("Year") +
+d <- ggplot(data=yrAvgs) + geom_line(aes(cYr, pptAvg), na.rm=TRUE) + geom_point(aes(cYr, pptAvg), na.rm=TRUE) +
+    ylab("Precip (in/yr)") + xlab("") +
 		# geom_text(aes(x=1895, y=350, label = "C")) +
-		geom_smooth(aes(cYr, pptAvg), method="lm") 
-		    #geom_line(aes(cYr, rPpt), colour = 'green', size=1)
+		geom_smooth(aes(cYr, pptAvg), method="lm", na.rm=TRUE) +
+		    #geom_line(aes(cYr, rPpt), colour = 'green', size=1) 
+    scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-    if(doP1 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, pptP1))
-    if(doP2 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, pptP2)) 
-		
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(4,1)))
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-print(c, vp=vplayout(3,1))
-print(d, vp=vplayout(4,1))
+    if(doP1 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, pptP1), na.rm=TRUE)
+    if(doP2 == "YES")d <- d + geom_smooth(method = lm, aes(cYr, pptP2), na.rm=TRUE) 
 
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(2,1)))
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(2,1)))
-print(c, vp=vplayout(1,1))
-print(d, vp=vplayout(2,1))
-
-PlotName <- "Annual Means Lines Regressions"
+#4-panel plot		
+p1 = plot_grid(a, b, c, d, nrow=4, align="v")
+title = ggdraw() + draw_label(paste(SiteID, " - Trends for Reference and Recent \nHistorical Periods", sep=""), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+p2 = plot_grid(title, p1, ncol=1, rel_heights = c(0.07, 1)) 
+p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard error of predicted y's \nReference period: ", beginRefYr, "-", endRefYr, "; Recent period: ", endRefYr+1, "-", EndYr, "; Overall period: ", BeginYr, "-", EndYr, sep=""),
+             y=.5, hjust=0.5, vjust=0.5, size=12)
+ggdraw(p3)
 
 OFName <- paste(OFDir, "/PRISM ", PlotName, " 4-panel ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-png(OFName, width=6.5*dpi, height = 8.5*dpi)
+ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
 
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(4,1)))
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-print(c, vp=vplayout(3,1))
-print(d, vp=vplayout(4,1))
-dev.off()
+#2-panel Tmax/Tmin plot
+p1 = plot_grid(a, b, nrow=2, align="v")
+p2 = plot_grid(title, p1, ncol=1, rel_heights = c(0.1, 1, 0.05)) 
+p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard error of predicted y's \nReference period: ", beginRefYr, "-", endRefYr, "; Recent period: ", endRefYr+1, "-", EndYr, "; Overall period: ", BeginYr, "-", EndYr, sep=""),
+             y=.5, hjust=0.5, vjust=0.5, size=12)
+ggdraw(p3)
 
 OFName <- paste(OFDir, "/PRISM ", PlotName, " Tmin Tmax ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-png(OFName, width=6.5*dpi, height = 6.0*dpi)
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(2,1)))
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-dev.off()
+ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
+
+#2-panel Tmean/Precip plot
+p1 = plot_grid(c, d, nrow=2, align="v")
+p2 = plot_grid(title, p1, ncol=1, rel_heights = c(0.1, 1, 0.05)) 
+p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard error of predicted y's \nReference period: ", beginRefYr, "-", endRefYr, "; Recent period: ", endRefYr+1, "-", EndYr, "; Overall period: ", BeginYr, "-", EndYr, sep=""),
+             y=.5, hjust=0.5, vjust=0.5, size=12)
+ggdraw(p3)
 
 OFName <- paste(OFDir, "/PRISM ", PlotName, " Tmean Precip ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-png(OFName, width=6.5*dpi, height = 6.0*dpi)
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(2,1)))
-print(c, vp=vplayout(1,1))
-print(d, vp=vplayout(2,1))
-dev.off()
+ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
 
 		# regressions for trends
- 
 lmTmax <- lm(yrAvgs$tmaxAvg~cYr)
 lmTmaxP1 <- lm(yrAvgs$tmaxP1~cYr)
 lmTmaxP2 <- lm(yrAvgs$tmaxP2~cYr)
@@ -486,11 +471,6 @@ seasStepAvgs$ppt <- seasStepAvgs$ppt * 12  # xx/mo to xx/yr
 
 ########################################
 
-yrLab <- c(seq(BeginYr+floor(.5*stepYrs), EndYr-floor(.5*stepYrs), by = stepYrs))
-par(mfrow=c(3,1), mar=c(4,4,1,2),  cex = 1)
-lineTyp = c(1,1,1,1)
-lineCol = c("blue", "dark green", "red", "brown")
-
 pdat <- seasStepAvgs   # period data
 
 	# these are departures from entire period of record
@@ -515,79 +495,59 @@ pdat$ppt[which(pdat$seas=="Spring")] <- pdat$ppt[which(pdat$seas=="Spring")] - m
 pdat$ppt[which(pdat$seas=="Summer")] <- pdat$ppt[which(pdat$seas=="Summer")] - mean(pdat$ppt[which(pdat$seas=="Summer")])
 pdat$ppt[which(pdat$seas=="Fall")] <- pdat$ppt[which(pdat$seas=="Fall")] - mean(pdat$ppt[which(pdat$seas=="Fall")])
 
-pdat$clr <- "NA"
-pdat$clr[which(pdat$seas=="Winter")] <- "blue"
-pdat$clr[which(pdat$seas=="Spring")] <- "darkgreen"
-pdat$clr[which(pdat$seas=="Summer")] <- "red"
-pdat$clr[which(pdat$seas=="Fall")] <- "brown"
 
       # need roundDown function to define axis ranges
-seas.cols = c("brown", "darkgreen", "red", "blue")
+
+SeasLineColors = scale_color_manual(name="Season: ", breaks=c("Fall", "Spring", "Summer", "Winter"),
+                                values = c("brown", "darkgreen", "red", "blue"))
+
 PlotName <- "Season Decadal Anomaly Lines" 
-a <- ggplot(pdat, aes(startYr+5, tmax, group=seas, colour=seas)) +
+a <- ggplot(pdat, aes(x=startYr+5, y=tmax, shape=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
 		geom_line(size=1) +
-		scale_color_manual(values=seas.cols) + 
-		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
+		SeasLineColors +
+    scale_shape(name="Season: ") +
+		geom_point(size=3.2) +
+		ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("") +
+    scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 		
-		theme(axis.text.y = element_text(size = 10)) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-		scale_x_continuous(breaks = c(1920, 1940, 1960, 1980, 2000)) +
-		ylab(expression(paste(Tmax, ~({}^o*F)))) + xlab("")
-		
-b <- ggplot(pdat, aes(startYr+5, tmin, group=seas, colour=seas)) +
+b <- ggplot(pdat, aes(startYr+5, tmin, shape=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
 		geom_line(size=1) +
-		scale_color_manual(values=seas.cols) + 
-		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
+		SeasLineColors +
+    scale_shape(name="Season: ") +
+		geom_point(size=3.2) +
+		ylab(expression(paste(Tmin, ~({}^o*F)))) + xlab("") +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 		
-		theme(axis.text.y = element_text(size = 10)) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-		scale_x_continuous(breaks = c(1920, 1940, 1960, 1980, 2000)) +
-		ylab(expression(paste(Tmin, ~({}^o*F)))) + xlab("")
-		
-c <- ggplot(pdat, aes(startYr+5, tmean, group=seas, colour=seas)) +
+c <- ggplot(pdat, aes(startYr+5, tmean, shape=seas, colour=seas)) +
 		#ylim(-1.75, 1.75) +
 		geom_line(size=1) +
-		scale_color_manual(values=seas.cols) + 
-		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
+		SeasLineColors + 
+    scale_shape(name="Season: ") +
+    geom_point(size=3.2) +
+		ylab(expression(paste(Tmean, ~({}^o*F)))) + xlab("") +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 		
-		theme(axis.text.y = element_text(size = 10)) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-		scale_x_continuous(breaks = c(1920, 1940, 1960, 1980, 2000)) +
-		ylab(expression(paste(Tmean, ~({}^o*F)))) + xlab("")
-		
-d <- ggplot(pdat, aes(startYr+5, ppt, group=seas, colour=seas)) +
+d <- ggplot(pdat, aes(startYr+5, ppt, shape=seas, colour=seas)) +
 		#ylim(-325, 325) +
 		geom_line(size=1) +
-		scale_color_manual(values=seas.cols) + 
-		geom_point(colour = pdat$clr, size=3.2, shape = pdat$seas) +
-		
-		theme(axis.text.y = element_text(size = 7)) +
-		theme(axis.title.y = element_text(size = 12, angle = 90)) +
-		scale_x_continuous(breaks = c(1920, 1940, 1960, 1980, 2000)) +
-		ylab("Precip (in / yr)") + xlab("")
+		SeasLineColors + 
+    scale_shape(name="Season: ") +
+    geom_point(size=3.2) +
+		ylab("Precip (in/yr)") + xlab("") +
+    scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 				
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(4,1)))
-vplayout<- function(x,y)
-	viewport(layout.pos.row=x, layout.pos.col=y)
-print(a, vp=vplayout(1,1))
-print(b, vp=vplayout(2,1))
-print(c, vp=vplayout(3,1))
-print(d, vp=vplayout(4,1))
+p1 = plot_grid(a, b, c, d, nrow=4, align="v")
+title = ggdraw() + draw_label(paste(SiteID, "- Decadal Anomalies by Season"), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+legend = get_legend(a + theme(legend.position = "bottom"))
+p2 = plot_grid(title, p1, legend, ncol=1, rel_heights = c(0.05, 1, 0.05)) 
+p3 = add_sub(p2, paste("Anomaly = (Mean decadal value) - (mean of all decades) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(seasStepAvgs$startYr)+9, sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p3)
 
 OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-png(OFName, width=6.5*dpi, height = 8.5*dpi)
-{
-  grid.newpage()
-  pushViewport(viewport(layout=grid.layout(4,1)))
-  print(a, vp=vplayout(1,1))    
-  print(b, vp=vplayout(2,1))
-  print(c, vp=vplayout(3,1))
-  print(d, vp=vplayout(4,1))
-}
-dev.off()
+ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
 
 
 #------------------------------------------------------------#
@@ -598,7 +558,7 @@ dev.off()
 tminSeas <- data.frame(tapply(baseData$tmin, list(baseData$yr,baseData$seas), FUN=mean))
 tmaxSeas <- data.frame(tapply(baseData$tmax, list(baseData$yr,baseData$seas), FUN=mean))
 tmeanSeas <- data.frame(tapply(baseData$tmean, list(baseData$yr,baseData$seas), FUN=mean))
-pptSeas  <- data.frame(tapply(baseData$ppt,   list(baseData$yr,baseData$seas),   FUN=mean))
+pptSeas  <- data.frame(tapply(baseData$ppt, list(baseData$yr,baseData$seas),   FUN=mean))
 
   # need to swap this and next section so use tminSeas absolute value, then calc anomoly and plot			
 	# departure from entire period of record
@@ -618,136 +578,151 @@ tminSeas <- tminSeas[1:(yLabPs*10),]
 tmeanSeas <- tmeanSeas[1:(yLabPs*10),]
 pptSeas <- pptSeas[1:(yLabPs*10),]
 
-poffset <- c(-.2, 0, .2, .4)  # box offsets for win, spr, sum, fal
-pcol <- c("lightblue", "lightgreen", "lightpink", "linen")
+  #Melt data frame
+GetDecadeSeasons = function(df){
+  df$Year = as.numeric(row.names(df))
+  df.m = melt(df, id="Year")
+  colnames(df.m) = c("Year", "Season", "Var")
+  df.m$Decade = (floor((df.m$Year+5)/10))*10
+  df.m$Season = factor(df.m$Season, levels=c("Winter", "Spring" ,"Summer", "Fall"))
+  return(df.m)
+}
 
-	# bp1 is first plot, with title and other features
-bp1 <- function( yDat, xDat, pcol="lightblue", offst = -.2, Title="Title here", 
-	Ylab="Degree (F)", yMax=-9999, yMin=-9999, yLabPos=1:12)
-	{	if(yMax == -9999) yMax <- ceiling(max(yDat))
-		if(yMin == -9999) yMin <- floor(min(yDat))
-		
-		boxplot(yDat ~ xDat, col=pcol, ylab=Ylab, 
-			at= 1:yLabPos + offst, boxwex=0.2, 		
-			ylim = c(yMin, yMax), main = Title)	}
- 	
- 	# bp2 are other plots added to e.g bp1
- 	
-bp2 <- function(yDat, xDat, pcol="lightblue", offst = 0, yLabPos=1:12)
-	{	boxplot(yDat ~ xDat, boxwex=0.2, col=pcol,
-		at=1:yLabPos + offst, add=TRUE, show.names=FALSE) }
+tmaxDecadeSeasons = GetDecadeSeasons(tmaxSeas)
+tminDecadeSeasons = GetDecadeSeasons(tminSeas)
+tmeanDecadeSeasons = GetDecadeSeasons(tmeanSeas)
+pptDecadeSeasons = GetDecadeSeasons(pptSeas)
+
+SeasBoxColors = scale_fill_manual(name="Season: ", values=c("lightblue", "lightgreen", "lightpink", "linen"))
+
+a = ggplot(tmaxDecadeSeasons, aes(x=factor(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  SeasBoxColors + labs(x="", y=expression(paste("Tmax (", degree*F,")", sep="")))
+b = ggplot(tminDecadeSeasons, aes(x=factor(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  SeasBoxColors + labs(x="", y=expression(paste("Tmin (", degree*F,")", sep="")))
+c = ggplot(tmeanDecadeSeasons, aes(x=factor(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  SeasBoxColors + labs(x="", y=expression(paste("Tmean (", degree*F,")", sep="")))
+d = ggplot(pptDecadeSeasons, aes(x=factor(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  SeasBoxColors + labs(x="", y="Ppt (in/year)")
 
 PlotName <- "Seas Decadal Tmax Tmin Anomaly Box"
-  OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-par(mfrow=c(2,1))
-bp1(tmaxSeas$Win, yrcat, Title="Maximum Temperature Anomaly by Season and Decade", yLabPos = yLabPs,
-    offst=poffset[1]) 
-bp2(tmaxSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
-bp2(tmaxSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
-bp2(tmaxSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
+p1 = plot_grid(a, b, nrow=2, align="v")
+title = ggdraw() + draw_label(paste(SiteID, "- Annual Anomalies by Season and Decade"), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+legend = get_legend(a + theme(legend.position = "bottom"))
+p2 = plot_grid(title, p1, legend, ncol=1, rel_heights = c(0.1, 1, 0.05)) 
+p3 = add_sub(p2, paste("Anomaly = (Mean annual value) - (mean of all years) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p3)
 
-bp1(tminSeas$Win, yrcat, Title="Minimum Temperature Anomaly by Season and Decade", yLabPos = yLabPs) 
-bp2(tminSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
-bp2(tminSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
-bp2(tminSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
-dev.off()
+OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8, height=6, dpi=dpi)
 
 PlotName <- "Seas Decadal Tmean Ppt Anomaly Box"
-  OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-par(mfrow=c(2,1))
-bp1(tmeanSeas$Win, yrcat, Title="Mean Temperature Anomaly by Season and Decade", yLabPos = yLabPs) 
-bp2(tmeanSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
-bp2(tmeanSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
-bp2(tmeanSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
+p1 = plot_grid(c, d, nrow=2, align="v")
+title = ggdraw() + draw_label(paste(SiteID, "- Annual Anomalies by Season and Decade"), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+legend = get_legend(a + theme(legend.position = "bottom"))
+p2 = plot_grid(title, p1, legend, ncol=1, rel_heights = c(0.1, 1, 0.05)) 
+p3 = add_sub(p2, paste("Anomaly = (Mean annual value) - (Mean of all years) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p3)
 
-bp1(pptSeas$Win, yrcat, Title="Precipitation Anomaly by Season and Decade", yLabPos = yLabPs, Ylab="Precip (in/mo)") 
-bp2(pptSeas$Spr, yrcat, pcol=pcol[2],offst=poffset[2], yLabPos=yLabPs)
-bp2(pptSeas$Sum, yrcat, pcol=pcol[3],offst=poffset[3], yLabPos=yLabPs)
-bp2(pptSeas$Fal, yrcat, pcol=pcol[4],offst=poffset[4], yLabPos=yLabPs)
-dev.off()   
+OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8, height=6, dpi=dpi)
+
 	
 #-------------------------------------------------#
 #     Box Plots - Decadal Avgs Annual & Seasonal
 #-------------------------------------------------#
-
-		####  Period (e.g. decadal) averages  #####
-
 nSteps = floor((EndYr - BeginYr)/stepYrs)	# year steps 
 stepVal <- rep(0,nSteps)
 midVal <- floor(stepYrs/2)
 
 for(i in 0:(nSteps-1))
-	stepVal[(1+i*stepYrs):((i+1)*stepYrs)] <- rep(midVal + i*stepYrs + BeginYr, stepYrs)
-	
+  stepVal[(1+i*stepYrs):((i+1)*stepYrs)] <- rep(midVal + i*stepYrs + BeginYr, stepYrs)
+
 stepData <- yrAvgs[yrAvgs$cYr >= BeginYr,]
 stepData <- stepData[1:length(stepVal),]
 stepData$stepVal <- stepVal
 
-tminLab <- expression(paste("Minimum Temperature (", degree*F,")", sep=""))
-tmaxLab <- expression(paste("Maximum Temperature (", degree*F,")", sep=""))
-tmeanLab <- expression(paste("Average Temperature (", degree*F,")", sep=""))
-par(mfrow=c(4,1))
 
 PlotName <- "Decadal Avg Tmin Tmax Tmean Ppt Box"
-OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-  par(mfrow=c(2,2))
-boxplot(tmaxAvg ~ stepVal, data=stepData, boxwex=0.5, col="lightpink", ylab=tmaxLab)
-boxplot(tminAvg ~ stepVal, data=stepData, boxwex=0.5, col="lightblue", ylab=tminLab)
-boxplot(tmeanAvg ~ stepVal, data=stepData, boxwex=0.5, col="lightgray", ylab=tmeanLab)
-boxplot(pptAvg ~ stepVal, data=stepData, boxwex=0.5, col="lightgreen", ylab="Precip (mm/yr)")
-dev.off()
+
+a = ggplot(stepData, aes(x=factor(stepVal), y=tmaxAvg)) + geom_boxplot(fill="red") +
+  labs(x="", y=expression(paste("Tmax (", degree*F,")", sep=""))) +
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+b = ggplot(stepData, aes(x=factor(stepVal), y=tminAvg)) + geom_boxplot(fill="blue") +
+  labs(x="", y=expression(paste("Tmin (", degree*F,")", sep=""))) +
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000")) 
+c = ggplot(stepData, aes(x=factor(stepVal), y=tminAvg)) + geom_boxplot(fill="tan") +
+  labs(x="", y=expression(paste("Tmean (", degree*F,")", sep=""))) +
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+d = ggplot(stepData, aes(x=factor(stepVal), y=pptAvg)) + geom_boxplot(fill="light blue") + 
+  labs(x="", y="Precip (in/yr)") +
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+
+p1 = plot_grid(a,b,c,d, nrow=2, ncol=2, align="v")
+title = ggdraw() + draw_label(paste(SiteID, "- Annual Climate Means By Decade"), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+p2 = plot_grid(title, p1, ncol=1, rel_heights = c(0.05, 1)) 
+p3 = add_sub(p2, paste("Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p3)
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8.5, height=8.5)
+
+
+		####  Period (e.g. decadal) averages for all seasons  #####
 
 ##  ========= Decadal values by season
+PlotName = "Decadal Seasonal Tmax Box"
+p1 = ggplot(tmaxDecadeSeasons, aes(x=as.character(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  facet_wrap(~ Season, nrow=2, ncol=2) +
+  SeasBoxColors + 
+  labs(x="", y=expression(paste("Maximum Temperature (", degree*F,")", sep="")), title=paste(SiteID, "- Annual Tmax Anomalies by Decade and Season")) +
+  theme(strip.text = element_text(size=16)) + 
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+p2 = add_sub(p1, paste("Anomaly = (Mean annual value) - (Mean of all years) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p2)
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8.5, height=8.5)
 
-pltD <- baseData[baseData$yr >= BeginYr & baseData$yr < EndYr, ]
-midVal <- floor(stepYrs/2)
-pltD$midYr <- BeginYr + floor((pltD$yr-BeginYr)/stepYrs) * stepYrs + midVal
+PlotName = "Decadal Seasonal Tmin Box"
+p1 = ggplot(tminDecadeSeasons, aes(x=as.character(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  facet_wrap(~ Season, nrow=2, ncol=2) +
+  SeasBoxColors + 
+  labs(x="", y=expression(paste("Minimum Temperature (", degree*F,")", sep="")), title=paste(SiteID, "- Annual Tmin Anomalies by Decade and Season")) + 
+  theme(strip.text = element_text(size=16)) + 
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+p2 = add_sub(p1, paste("Anomaly = (Mean annual value) - (Mean of all years) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p2)
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8.5, height=8.5)
 
-PlotName <- "Decadal Seasonal Tmax Box"
-  OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-  par(mfrow=c(2,2))
-boxplot(tmax ~ midYr, data=pltD[pltD[,4]=="Winter",], boxwex=0.5, col="lightblue", ylab= tmaxLab, main="Winter")
-boxplot(tmax ~ midYr, data=pltD[pltD[,4]=="Spring",], boxwex=0.5, col="lightgreen", ylab=tmaxLab, main="Spring")
-boxplot(tmax ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpink", ylab=tmaxLab, main="Summer")
-boxplot(tmax ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab=tmaxLab, main="Fall")
-dev.off()
+PlotName = "Decadal Seasonal Tmean Box"
+p1 = ggplot(tmeanDecadeSeasons, aes(x=as.character(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  facet_wrap(~ Season, nrow=2, ncol=2) +
+  SeasBoxColors + 
+  labs(x="", y=expression(paste("Mean Temperature (", degree*F,")", sep="")), title=paste(SiteID, "- Annual Tmean Anomalies by Decade and Season")) + 
+  theme(strip.text = element_text(size=16)) + 
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+p2 = add_sub(p1, paste("Anomaly = (Mean annual value) - (Mean of all years) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p2)
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8.5, height=8.5)
 
-PlotName <- "Decadal Seasonal Tmin Box"
-  OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-  par(mfrow=c(2,2))
-boxplot(tmin ~ midYr, data=pltD[pltD[,4]=="Winter",], boxwex=0.5, col="lightblue", ylab=tminLab, main="Winter")
-boxplot(tmin ~ midYr, data=pltD[pltD[,4]=="Spring",], boxwex=0.5, col="lightgreen", ylab=tminLab, main="Spring")
-boxplot(tmin ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpink", ylab=tminLab, main="Summer")
-boxplot(tmin ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab=tminLab, main="Fall")
-dev.off()
+PlotName = "Decadal Seasonal Ppt Box"
+p1 = ggplot(pptDecadeSeasons, aes(x=as.character(Decade), y=Var, fill=Season)) + geom_boxplot() +
+  facet_wrap(~ Season, nrow=2, ncol=2) +
+  SeasBoxColors + 
+  labs(x="", y=expression("Precipitation (in/mon)"), title=paste(SiteID, "- Annual Precip Anomalies by Decade and Season")) + 
+  theme(strip.text = element_text(size=16)) + 
+  scale_x_discrete(breaks=c("1900", "1920", "1940", "1960", "1980", "2000"))
+p2 = add_sub(p1, paste("Anomaly = (Mean annual value) - (Mean of all years) \n Decadal ranges = ", stepYrs, "-year steps from ", BeginYr, " to ", max(tmaxDecadeSeasons$Decade+4), sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p2)
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=8.5, height=8.5)
 
-PlotName <- "Decadal Seasonal Tmean Box"
-  OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-  par(mfrow=c(2,2))
-boxplot(tmean ~ midYr, data=pltD[pltD[,4]=="Winter",], boxwex=0.5, col="lightblue", ylab=tmeanLab, main="Winter")
-boxplot(tmean ~ midYr, data=pltD[pltD[,4]=="Spring",], boxwex=0.5, col="lightgreen", ylab=tmeanLab, main="Spring")
-boxplot(tmean ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpink", ylab=tmeanLab, main="Summer")
-boxplot(tmean ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab=tmeanLab, main="Fall")
-dev.off()
-
-PlotName <- "Decadal Seasonal Ppt Box"
-  OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-  par(mfrow=c(2,2))
-boxplot(ppt ~ midYr, data=pltD[pltD[,4]=="Winter",], boxwex=0.5, col="lightblue", ylab="Precipitation (in/mon)", main="Winter")
-boxplot(ppt ~ midYr, data=pltD[pltD[,4]=="Spring",], boxwex=0.5, col="lightgreen", ylab="Precipitation (in/mon)", main="Spring")
-boxplot(ppt ~ midYr, data=pltD[pltD[,4]=="Summer",], boxwex=0.5, col="lightpink", ylab="Precipitation (in/mon)", main="Summer")
-boxplot(ppt ~ midYr, data=pltD[pltD[,4]=="Fall",], boxwex=0.5, col="linen", ylab="Precipitation (in/mon)", main="Fall")
-dev.off()   #  box plots
 
 #--------------------------------------------------------------------------#
-#       RED BLUE anomaly plots - from reference period (not entire record) #
+#       RED BLUE anomaly plots 
 #--------------------------------------------------------------------------#
 
 mtempMin = mean(yrAvgs$tminAvg)
@@ -759,57 +734,57 @@ mTmin = mean(refData$tmin)
 mTmax = mean(refData$tmax)
 mTmean = mean(refData$tmean)
 mPrcp = mean(refData$ppt)
-xlabel = "Year"
+
+Annual.Anomaly = data.frame(cYr = yrAvgs$cYr,
+                            aTmax = yrAvgs$tmaxAvg - mtempMax,
+                            aTmin = yrAvgs$tminAvg - mtempMin,
+                            aTmean = yrAvgs$tmeanAvg - mtempMean,
+                            aPpt = yrAvgs$pptAvg - mppt)
+Annual.Anomaly$aTmax.col = ifelse(Annual.Anomaly$aTmax > 0, "red", "blue")
+Annual.Anomaly$aTmin.col = ifelse(Annual.Anomaly$aTmin > 0, "red", "blue")
+Annual.Anomaly$aTmean.col = ifelse(Annual.Anomaly$aTmean > 0, "red", "blue")
+Annual.Anomaly$aPpt.col = ifelse(Annual.Anomaly$aPpt > 0, "green", "brown")
 
 PlotName <- "Red-Blue Anomaly Filled Line"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-  png(OFName, width=6.5*dpi, height = 8.5*dpi)
-  par(mfrow=c(4,1), bty="l", mar=c(4,4,1,2), cex = 1)
-     
+
   # Tmax
-temp = yrAvgs$tmaxAvg - mtempMax	
-plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel, 
-	ylab = expression(paste("Tmax (", degree*F,")", sep=""))
-	, xlim =c(BeginYr, dataEndYr))
-	# text(1896, 18.9, "A", cex = 1.2)	
-abline(h = 0)	
-tp <- TwoPolys(yrAvgs$cYr, temp, 0)
-polygon(tp$X, tp$lower, col="blue")
-polygon(tp$X, tp$upper, col="red")
-    
-# Tmin
-temp = yrAvgs$tminAvg - mtempMin  
-plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel, 	
-	ylab = expression(paste("Tmin (", degree*F,")", sep="")), xlim =c(BeginYr, dataEndYr))
-	# text(1896, 2.08, "B", cex = 1.2)		
-abline(h = 0)
+a = ggplot(Annual.Anomaly, aes(x=cYr, y=aTmax, fill=aTmax.col)) + 
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("blue", "red")) +
+  labs(x="", y=expression(paste("Tmax (", degree*F,")", sep=""))) + 
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-tp <- TwoPolys(yrAvgs$cYr, temp, 0)
-polygon(tp$X, tp$lower, col="blue")
-polygon(tp$X, tp$upper, col="red")
-    # TMean
-temp = yrAvgs$tmeanAvg - mtempMean
-plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel, 	
-	ylab = expression(paste("Tmean (", degree*F,")", sep="")), xlim =c(BeginYr, dataEndYr))
-	# text(1896, 2.08, "B", cex = 1.2)		
-abline(h = 0)
-tp <- TwoPolys(yrAvgs$cYr, temp, 0)
-polygon(tp$X, tp$lower, col="blue")
-polygon(tp$X, tp$upper, col="red")
+  #Tmin
+b = ggplot(Annual.Anomaly, aes(x=cYr, y=aTmin, fill=aTmin.col)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("blue", "red")) +
+  labs(x="", y=expression(paste("Tmin (", degree*F,")", sep=""))) +  
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-#### annual precip plot ###
-temp = yrAvgs$pptAvg - mppt
-xlabel = "Year"
-ylabel = "Precip (in / yr)"
-plot(yrAvgs$cYr, temp, type = 'n', xlab=xlabel,
-     ylab=ylabel, xlim =c(BeginYr, dataEndYr))
-#  text(1896, 622, "C", cex = 1.2)	
-abline(h = 0)
-tp <- TwoPolys(yrAvgs$cYr, temp, 0)
-polygon(tp$X, tp$lower, col="brown")
-polygon(tp$X, tp$upper, col="green")
+  #Tmean 
+c = ggplot(Annual.Anomaly, aes(x=cYr, y=aTmean, fill=aTmean.col)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("blue", "red")) +
+  labs(x="", y=expression(paste("Tmean (", degree*F,")", sep=""))) +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
 
-dev.off()   
+  #Precip
+d = ggplot(Annual.Anomaly, aes(x=cYr, y=aPpt, fill=aPpt.col)) + 
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("brown", "green")) +
+  labs(x="", y="Precip (in/yr)") +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
+
+p1 = plot_grid(a,b,c,d, nrow=4, align="v")
+title = ggdraw() + draw_label(paste(SiteID, "- Annual Climate Anomalies"), 
+                              fontface="bold", size=TitleSize, vjust=0.5)
+p2 = plot_grid(title, p1, ncol=1, rel_heights = c(0.05, 1)) 
+p3 = add_sub(p2, paste("Anomaly = (Annual value) - (Mean of all years) \nData range = ", BeginYr, "-", EndYr, sep=""), y=0.5, hjust=0.5, size=12)
+ggdraw(p3)
+OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
+ggsave(OFName, width=6.5, height=8.5)
+
 
 ### EOF ###
 
