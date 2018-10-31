@@ -31,21 +31,47 @@ library(reshape2)
 
 rm(list=ls())
 
-setwd("C:/Users/arcarlson/Documents/RSS Plots/CMIP5_BOR/RMNP")
-load("RMNP_40.4375_-105.5625_Final_Environment.RData")
+setwd("~/RSS/Parks/GUCO/Figs CMIP5")
+load("GUCO_36.1875_-79.8125_Final_Environment.RData")
 
-FilePre <- paste(SiteID, Lat, Lon, "CF_", sep="_")
 
-      # Need to check all the subsets
-      ### NEED TO CHANGE LINE 72 for ordering scenarios on plots
-FutureSubset <- c("Hot Wet","Warm Dry")          # Select two scenarios from the CFs vector specified in CMIP5_Parsing script. Names must match.
+################ INITIALS ##########################33
+
+# Need to check all the subsets
+### NEED TO CHANGE LINE 72 for ordering scenarios on plots
+FutureSubset <- c("Hot Wet","Warm Moist")          # Select two scenarios from the CFs vector specified in CMIP5_Parsing script. Names must match.
 Scenario1<-FutureSubset[1]
 Scenario2<-FutureSubset[2]
 
+#Colors for RCP 4.5, RCP 8.5
+col.RCP2 = c("blue", "red")
+
 ## All 508-compliant color scheme -- navy (hot wet), light blue (warm wet), pink (warm dry), red (hot dry)
 colors5 <-   c("#12045C","#9A9EE5","#F3D3CB","#E10720","white")
-colors2<-c("#12045C","#F3D3CB") #navy - hot wet; pink - warm dry
-colors3 <- c("grey","#12045C","#F3D3CB")
+#colors2<-c("#12045C","#F3D3CB") #navy - hot wet; pink - warm dry
+colors2 <- c("blue", "orange")
+colors3 <- c("dark grey","blue", "orange")
+
+##Plot parameters
+
+#Height and width 
+PlotWidth = 15
+PlotHeight = 9
+
+#ggplot theme to control formatting parameters for plots with month on the x-axis
+PlotTheme = theme(axis.text=element_text(size=20),    #Text size for axis tick mark labels
+                  axis.title.x=element_text(size=24, hjust=0.5, margin=margin(t=20, r=20, b=20, l=20)),               #Text size and alignment for x-axis label
+                  axis.title.y=element_text(size=24, vjust=0.5,  margin=margin(t=20, r=20, b=20, l=20)),              #Text size and alignment for y-axis label
+                  plot.title=element_text(size=26,face="bold",hjust=0.5, margin=margin(t=20, r=20, b=20, l=20)),      #Text size and alignment for plot title
+                  legend.title=element_text(size=24),                                                                    #Text size of legend category labels
+                  legend.text=element_text(size=20),                                                                   #Text size of legend title
+                  legend.position = "right")                                                                           #Legend position
+
+#X-axis labels for monthly plots
+MonthLabels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
+
+#################### END INITIALS ##########################3
+
 
 MP3<-subset(Monthly_Precip_delta, CF %in% FutureSubset)
 MP3$month<-factor(MP3$month,levels=c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
@@ -99,15 +125,11 @@ t2.annual$CF<-factor(t2.annual$CF,levels=c("Historical",Scenario1, Scenario2), o
 ###Scatter plot showing delta precip and tavg, color by emissions scenario, x-axis scaled 0-max, with points for averages of 3 CFs
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
 scatter + geom_point(aes(color=emissions),size=4) + 
-  theme(axis.text=element_text(size=20, colour='black'),
-        axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=24,face="bold",hjust=0.5),
-        legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
+  PlotTheme + 
   labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
             y = "Change in average annual precipitation (in)")) +
-  scale_colour_manual(values=c("blue", "red"))+
+  scale_colour_manual(values=col.RCP2)+
   guides(color=guide_legend(title="Emissions\nScenarios\n")) +
   # geom_rect(color = "blue", alpha=0) + 
   #  geom_hline(aes(yintercept=365*mean(Future_Means$DeltaPr)),linetype=2) + 
@@ -117,7 +139,7 @@ scatter + geom_point(aes(color=emissions),size=4) +
   geom_point(aes(x=mean(DeltaTavg[which(CF==Scenario2)]), y=mean(365*DeltaPr[which(CF==Scenario2)])), shape=23, size=10, fill='black', colour='black') +
   scale_x_continuous(limits=c(0, max(Future_Means$DeltaTavg)+.25))
 
-ggsave(sprintf("%s_%s_%s_GCM_Scatter_CF_Averages_Plot.png", SiteID, Lat, Lon), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_GCM_Scatter_CF_Averages_Plot.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
       # set CF order for bar graph of change in average monthly precip by CF 
 
@@ -126,14 +148,13 @@ MP3$CF<-factor(MP3$CF,levels=c(Scenario1, Scenario2), ordered=is.ordered(MP3$CF)
 #Bar graph of change in average monthly precip by CF
 ggplot(MP3, aes(x=month,y=30*Precip,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=1.0),
-        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
-  labs(title = paste(SiteID, "- Change in average monthly precipitation in 2040 (2025-2055) vs 1950-1999"), 
+  PlotTheme +
+  labs(title = paste(SiteID, "- Change in avg. monthly precip. in 2040 (2025-2055) vs 1950-1999"), 
        x = "Month", y = "Change in Precipitation (in)") +
-  scale_fill_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C"))
+  scale_fill_manual(name="Climate Future",values = colors2) +
+  scale_x_discrete(labels = MonthLabels)
 
-ggsave(paste(FilePre,"Avg_Monthly_Precip_Delta_Bar.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_GCM_Scatter_CF_Avg_Monthly_Precip_Delta_Bar.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
     # set CF order for bar graph of change in average monthly precip by CF 
@@ -142,16 +163,14 @@ Tmax3$CF<-factor(Tmax3$CF,levels=c(Scenario1, "Central", Scenario2), ordered=is.
     #Line plot of change in MaxTemp by CF/month
 ggplot(Tmax3, aes(x=month, y=Tmax, group=CF, colour = CF)) +
   geom_line(size = 2, stat = "identity") + geom_point(shape = 21, size = 5, fill = "white") +
-  theme(axis.text=element_text(size=16),
-        axis.title.x=element_text(size=16,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=1.0),
-        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
-  labs(title = paste(SiteID, "- Change in average daily Tmax in 2040 (2025-2055) vs 1950-1999"), 
-            x = "Month", y = "Change in Temperature (Degrees F)") +
-  scale_color_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C")) +
-  scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmax_delta$Tmax))))
+  PlotTheme +
+  labs(title = paste(SiteID, "- Change in avg. daily Tmax in 2040 (2025-2055) vs 1950-1999"), 
+            x = "Month", y = "Change in Temperature (Deg F)") +
+  scale_color_manual(name="Climate Future",values = colors2) +
+  scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmax_delta$Tmax)))) + 
+  scale_x_discrete(labels = MonthLabels)
 
-ggsave(paste(FilePre,"Avg_Monthly_Tmax_Delta_Line.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Avg_Monthly_Tmax_Delta_Line.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
      #set CF order for bar graph of change in average monthly precip by CF 
@@ -161,133 +180,102 @@ Tmin3$CF<-factor(Tmin3$CF,levels=c(Scenario1, Scenario2), ordered=is.ordered(Tmi
 ggplot(Tmin3, aes(x=month, y=Tmin, group=CF, colour = CF)) +
   geom_line(size = 2, stat = "identity") + 
   geom_point(shape = 21, size = 5, fill = "white") +
-  theme(axis.text=element_text(size=16),
-        axis.title.x=element_text(size=16,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=1.0),
-        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
-  labs(title = paste(SiteID, "- Change in average daily Tmin in 2040 (2025-2055) vs 1950-1999"),
-            x = "Month", y = "Change in Temperature (Degrees F)") +
-  scale_color_manual(name="Climate Future",values = c("#2B83BA","orange","#D7191C")) +
-  scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmin_delta$Tmin))))
+  PlotTheme +
+  labs(title = paste(SiteID, "- Change in avg. daily Tmin in 2040 (2025-2055) vs 1950-1999"),
+            x = "Month", y = "Change in Temperature (Deg F)") +
+  scale_color_manual(name="Climate Future",values = colors2) +
+  scale_y_continuous(limits=c(0, ceiling(max(Monthly_Tmin_delta$Tmin)))) +
+  scale_x_discrete(labels = MonthLabels)
 
-ggsave(paste(FilePre,"Avg_Monthly_Tmin_Delta_Line.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Avg_Monthly_Tmin_Delta_Line.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
         # create dataset for bar plot of drought duration (max consecutive # of days)
 DM3mean<-ddply(DM3, "CF", summarise,
                    MeanContinOverHotTemp=mean(DroughtMaxDays))
-
 newrow <- data.frame( "CF" = character(), "MeanContinOverHotTemp" = numeric(), stringsAsFactors=FALSE)
 newrow[nrow(newrow) + 1, ] <- c( "Historical", mean(DMH$DroughtMaxDays))
-
 DM3mean<-rbind(DM3mean, newrow)
-
-DM3mean$CF<-factor(DM3mean$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(DM3mean$CF))
-
+DM3mean$CF<-factor(DM3mean$CF,levels=c("Historical",Scenario1, Scenario2), ordered=is.ordered(DM3mean$CF))
 DM3mean$MeanContinOverHotTemp<-as.numeric(DM3mean$MeanContinOverHotTemp)
-
 rm(newrow)
-
 
     #Bar graph of future drougth duration (max consecutive # of days) vs. historical mean and CF
 ggplot(DM3mean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
+  PlotTheme +
   coord_cartesian(ylim=c(0, 20)) +
   labs(title = paste(SiteID, "- Max Annual Avg. Drought Length in Historical (1950-1999) & Future (2025-2055)"), 
        x = "Historical & Future Climate Scenarios", y = "Drought Length (Days)") +
-  scale_fill_manual(name="",values = c("dark grey", "blue", "orange","#FFFFBF","#D7191C"))
+  scale_fill_manual(name="", values = colors3)
 
-ggsave(paste(FilePre,"Max_Drought_Length_Bar.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Max_Drought_Length_Bar.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
       # create dataset for bar graph of total number of days/year over hot temperature threshold
 TOHotTempmean<-ddply(TOHotTemp3, "CF", summarise,
                MeanOverHotTemp=mean(Adjusted))
-
 newrow <- data.frame( "CF" = character(), "MeanOverHotTemp" = numeric(), stringsAsFactors=FALSE)
 newrow[nrow(newrow) + 1, ] <- c( "Historical", mean(TOHotTempH$Adjusted))
-
 TOHotTempmean<-rbind(TOHotTempmean, newrow)
-
 TOHotTempmean$CF<-factor(TOHotTempmean$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TOHotTempmean$CF))
-
 TOHotTempmean$MeanOverHotTemp<-as.numeric(TOHotTempmean$MeanOverHotTemp)
-
 rm(newrow)
 
       #Bar graph of total number of days/year over hot temperature threshold
 ggplot(TOHotTempmean, aes(x=CF,y=MeanOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=0.8),
-        plot.title=element_text(size=24,face="bold",hjust=0.5)) +
+  PlotTheme +
   #coord_cartesian(ylim=c(50, 65)) +
-  labs(list(title = paste(SiteID, "- Avg. Tot. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
-            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
-  scale_fill_manual(name="",values = c("dark grey","blue", "orange","#FFFFBF","#D7191C"))
+  labs(list(title = paste(SiteID, "- Avg. Tot. Days/Yr >", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future"))  +
+  scale_fill_manual(name="",values = colors3)
 
-ggsave(paste(FilePre,"Days_Over_HotTemp.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Days_Over_HotTemp.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
     # creare dataset for  bar graph of total number of CONSECUTIVE days/year over hot temperature threshold
 TCOHotTempmean<-ddply(TCOHotTemp3, "CF", summarise,
                  MeanContinOverHotTemp=mean(Adjusted))
-
 newrow <- data.frame( "CF" = character(), "MeanContinOverHotTemp" = numeric(), stringsAsFactors=FALSE)
 newrow[nrow(newrow) + 1, ] <- c( "Historical", mean(TCOHotTempH$Adjusted))
-
 TCOHotTempmean<-rbind(TCOHotTempmean, newrow)
-
 TCOHotTempmean$CF<-factor(TCOHotTempmean$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TCOHotTempmean$CF))
-
 TCOHotTempmean$MeanContinOverHotTemp<-as.numeric(TCOHotTempmean$MeanContinOverHotTemp)
-
 rm(newrow)
 
       #Bar graph of total number of CONSECUTIVE days/year over hot temperature threshold
 ggplot(TCOHotTempmean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
+  PlotTheme +
   # coord_cartesian(ylim=c(0, 40)) +
   labs(list(title = paste(SiteID, "- Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
-            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
-  scale_fill_manual(name="",values = c("dark grey", "blue","orange","#D7191C"))
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future"))  +
+  scale_fill_manual(name="",values = colors3)
 
-ggsave(paste(FilePre,"Consecutive Days_Over_HotTemp.png",sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Consecutive Days_Over_HotTemp.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
-    # creare dataset for bar graph of total number of days/year under cold temperature threshold
+    # create dataset for bar graph of total number of days/year under cold temperature threshold
 TUColdTempmean<-ddply(TUColdTemp3, "CF", summarise,
                  MeanUnderColdTemp=mean(Adjusted))
-
 newrow <- data.frame( "CF" = character(), "MeanUnderColdTemp" = numeric(), stringsAsFactors=FALSE)
 newrow[nrow(newrow) + 1, ] <- c( "Historical", mean(TUColdTempH$Adjusted))
-
 TUColdTempmean<-rbind(TUColdTempmean, newrow)
-
 TUColdTempmean$CF<-factor(TUColdTempmean$CF,levels=c("Historical",Scenario1, "Central", Scenario2), ordered=is.ordered(TUColdTempmean$CF))
-
 TUColdTempmean$MeanUnderColdTemp<-as.numeric(TUColdTempmean$MeanUnderColdTemp)
-
 rm(newrow)
 
       # Bar graph of total number of days/year over cold temperature threshold
 ggplot(TUColdTempmean, aes(x=CF,y=MeanUnderColdTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=18,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
+  PlotTheme +
     #  coord_cartesian(ylim=c(30, 65)) +
   labs(list(title = paste(SiteID, "- Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
-            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future"))  +
-  scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future"))  +
+  scale_fill_manual(name="",values = colors3)
 
-ggsave(paste(FilePre, "Days_Under_ColdTemp.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Days_Under_ColdTemp.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 
   #Create data frame for days/year under historic 5th percentile value
@@ -302,14 +290,12 @@ TU5thPercentilemean$MeanUnder5th<-as.numeric(TU5thPercentilemean$MeanUnder5th)
       # Bar graph of days/year with Tmin under historic 5th percentile value
 ggplot(TU5thPercentilemean, aes(x=CF, y=MeanUnder5th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=18,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " Â°F) in ", Year, sep=""),
-            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
-  scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
+  PlotTheme +
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " °F) in ", Year, sep=""),
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")) +
+  scale_fill_manual(name="",values = colors3)
 
-ggsave(paste(FilePre, "Days_Under_5thPercentile.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Days_Under_5thPercentile.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
   #Create data frame for days/year over historic 95th percentile value
 TO95thPercentilemean<-ddply(TO95thPercentile3, "CF", summarise,
@@ -323,14 +309,12 @@ TO95thPercentilemean$MeanOver95th<-as.numeric(TO95thPercentilemean$MeanOver95th)
       # Bar graph of days/year with Tmin under historic 5th percentile value
 ggplot(TO95thPercentilemean, aes(x=CF, y=MeanOver95th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
-  theme(axis.text=element_text(size=16),axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=18,vjust=0.8),
-        plot.title=element_text(size=18,face="bold",hjust=0.5)) +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " Â°F) in ", Year, sep=""),
-            x = "Historical & Future Climate Scenarios", y = paste("Days"), colour = "Climate Future")) +
-  scale_fill_manual(name="",values = c("dark grey", "blue", "orange", "#D7191C"))
+  PlotTheme +
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " °F) in ", Year, sep=""),
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")) +
+  scale_fill_manual(name="",values = colors3)
 
-ggsave(paste(FilePre, "Days_Over_95thPercentile.png", sep=""), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_Days_Over_95thPercentile.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 ###Scatter plot showing delta precip and tavg, color by emissions scenario, with box for all 3 CF's
 if(grepl("Warm", Scenario1)){
@@ -362,15 +346,11 @@ if(grepl("Dry", Scenario1) | grepl("Moist", Scenario1)){
 
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr))
 scatter + geom_point(aes(color=emissions),size=4) + 
-  theme(axis.text=element_text(size=20),
-        axis.title.x=element_text(size=20,vjust=-0.2),
-        axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=24,face="bold",hjust=0.5),
-        legend.text=element_text(size=20), legend.title=element_text(size=18)) + 
+  PlotTheme + 
   labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
             y = "Change in average annual precipitation (in)")) +
-  scale_colour_manual(values=c("blue", "red"))+
+  scale_colour_manual(values=col.RCP2)+
   guides(color=guide_legend(title="Emissions\nScenarios\n")) +
   geom_rect(xmin=xmin1, xmax=xmax1, ymin=ymin1, ymax=ymax1, color = col1, alpha=0, size=1) + 
   geom_rect(xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75, color = "yellow", alpha=0, size=1) +
@@ -379,7 +359,7 @@ scatter + geom_point(aes(color=emissions),size=4) +
   geom_vline(aes(xintercept=mean(Future_Means$DeltaTavg)),linetype=2)  
 #scale_y_continuous(limits=c(-3.75,3.75))
 
-ggsave(sprintf("%s_%s_%s_GCM_Scatter_Plot_3CFs.png", SiteID, Lat, Lon), width = 15, height = 9)
+ggsave(sprintf("%s_%s_%s_GCM_Scatter_Plot_3CFs.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
 
 ############################################################################
 ##### New plots from DETO stuff
