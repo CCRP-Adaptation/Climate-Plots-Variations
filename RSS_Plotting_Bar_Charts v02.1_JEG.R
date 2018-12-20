@@ -291,7 +291,7 @@ TU5thPercentilemean$MeanUnder5th<-as.numeric(TU5thPercentilemean$MeanUnder5th)
 ggplot(TU5thPercentilemean, aes(x=CF, y=MeanUnder5th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   PlotTheme +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " 캟) in ", Year, sep=""),
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " 째F) in ", Year, sep=""),
             x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")) +
   scale_fill_manual(name="",values = colors3)
 
@@ -310,7 +310,7 @@ TO95thPercentilemean$MeanOver95th<-as.numeric(TO95thPercentilemean$MeanOver95th)
 ggplot(TO95thPercentilemean, aes(x=CF, y=MeanOver95th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   PlotTheme +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " 캟) in ", Year, sep=""),
+  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " 째F) in ", Year, sep=""),
             x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")) +
   scale_fill_manual(name="",values = colors3)
 
@@ -502,7 +502,7 @@ AvgHistPrYr
 Summary.Table<-setNames(data.frame(matrix(ncol = 7, nrow = 14)), c("Var","Season","Historical",paste(Scenario1,"",sep=" "),
                                                                    paste(Scenario1,"% Delta",sep=" "),paste(Scenario2,"",sep=" "),paste(Scenario2,"% Delta",sep=" ")))
 Summary.Table$Var<-c("Seasonal avg. daily Max Temp (째F)","","","","Seasonal avg. daily Min Temp (째F)","","","",
-                     "Avg total days/yr >100째F","Avg total days/yr <32째F","Seasonal Precipitation (in)","","","")
+                     paste("Avg total days/yr >", HotTemp, "째F"), paste("Avg total days/yr <", ColdTemp, "째F"),"Seasonal Precipitation (in)","","","")
 Summary.Table$Season<-c("W","Sp","Su","F","W","Sp","Su","F","","","W","Sp","Su","F")
 
 #Historical Seasonal data
@@ -630,12 +630,12 @@ SuPP1<-((SuPrecip.ab1/SuHP)/SuHP)*100
 FPP1<-((FPrecip.ab1-FHP)/FHP)*100
 
 #Days >100 deg %change
-TOHotTempP<-ddply(TOHotTemp3,"CF",summarise,mean=mean(Adjusted))
+TOHotTempP<-ddply(TOHotTemp3,"CF",summarise,mean=mean(HotDays))
 TOHotTempP<-TOHotTempP$mean[TOHotTempP$CF==Scenario1]
 TOHotTempPerc1<-((TOHotTempP - HHotTemp$MeanOverHotTemp)/HHotTemp$MeanOverHotTemp)*100
 
 #Days <32 deg %change
-TUColdTempPerc<-ddply(TUColdTemp3,"CF",summarise,mean=mean(Adjusted))
+TUColdTempPerc<-ddply(TUColdTemp3,"CF",summarise,mean=mean(ColdDays))
 TUColdTempPerc<-TUColdTempPerc$mean[TUColdTempPerc$CF==Scenario1]
 TUColdTempPerc1<-((TUColdTempPerc-HColdTemp$MeanUnderColdTemp)/HColdTemp$MeanUnderColdTemp)*100
 
@@ -644,18 +644,18 @@ Ab1delta<-c(WXP1,SpXP1,SuXP1,FXP1,WNP1,SpNP1,SuNP1,FNP1,
 
 Summary.Table[[paste(Scenario1,"% Delta",sep=" ")]]<-round(Ab1delta,digits=2)
 
-# Fill in Scenario2 Abs
-#Tmax - Scenario 2
+# Fill in Scenario 2 Absolute Values for tables
+#Tmax - mean seasonal Tmax for scenario 1
 WTmax.ab2<-WTmax.ab$mean[WTmax.ab$CF==Scenario2]
 SpTmax.ab2<-SpTmax.ab$mean[SpTmax.ab$CF==Scenario2]
 SuTmax.ab2<-SuTmax.ab$mean[SuTmax.ab$CF==Scenario2]
 FTmax.ab2<-FTmax.ab$mean[FTmax.ab$CF==Scenario2]
-#Tmin - Scenario 2
+#Tmin - mean seasonal Tmin for scenario 1
 WTmin.ab2<-WTmin.ab$mean[WTmin.ab$CF==Scenario2]
 SpTmin.ab2<-SpTmin.ab$mean[SpTmin.ab$CF==Scenario2]
 SuTmin.ab2<-SuTmin.ab$mean[SuTmin.ab$CF==Scenario2]
 FTmin.ab2<-FTmin.ab$mean[FTmin.ab$CF==Scenario2]
-#Precip - Scenario 2
+#Precip - Seasonal total Precip for Scenario 1 (sum of monthly mean for season)
 WPrecip.ab2<-WPrecip.ab$sum[WPrecip.ab$CF==Scenario2]
 SpPrecip.ab2<-SpPrecip.ab$sum[SpPrecip.ab$CF==Scenario2]
 SuPrecip.ab2<-SuPrecip.ab$sum[SuPrecip.ab$CF==Scenario2]
@@ -667,8 +667,7 @@ Ab2<-c(WTmax.ab2,SpTmax.ab2,SuTmax.ab2,FTmax.ab2,WTmin.ab2,SpTmin.ab2,SuTmin.ab2
        WPrecip.ab2,SpPrecip.ab2,SuPrecip.ab2,FPrecip.ab2)
 
 Summary.Table[[paste(Scenario2,"",sep=" ")]]<-round(Ab2,digits=2)
-
-# Scenario 2 Percent change Calculations
+# Percent change Calculations
 #TMax %change
 WXP2<-((WTmax.ab2-WHTmax)/WHTmax)*100
 SpXP2<-((SpTmax.ab2-SpHTmax)/SpHTmax)*100
@@ -688,12 +687,12 @@ SuPP2<-((SuPrecip.ab2/SuHP)/SuHP)*100
 FPP2<-((FPrecip.ab2-FHP)/FHP)*100
 
 #Days >100 deg %change
-TOHotTempP<-ddply(TOHotTemp3,"CF",summarise,mean=mean(Adjusted))
+TOHotTempP<-ddply(TOHotTemp3,"CF",summarise,mean=mean(HotDays))
 TOHotTempP<-TOHotTempP$mean[TOHotTempP$CF==Scenario2]
 TOHotTempPerc2<-((TOHotTempP - HHotTemp$MeanOverHotTemp)/HHotTemp$MeanOverHotTemp)*100
 
 #Days <32 deg %change
-TUColdTempPerc<-ddply(TUColdTemp3,"CF",summarise,mean=mean(Adjusted))
+TUColdTempPerc<-ddply(TUColdTemp3,"CF",summarise,mean=mean(ColdDays))
 TUColdTempPerc<-TUColdTempPerc$mean[TUColdTempPerc$CF==Scenario2]
 TUColdTempPerc2<-((TUColdTempPerc-HColdTemp$MeanUnderColdTemp)/HColdTemp$MeanUnderColdTemp)*100
 
@@ -702,8 +701,7 @@ Ab2delta<-c(WXP2,SpXP2,SuXP2,FXP2,WNP2,SpNP2,SuNP2,FNP2,
 
 Summary.Table[[paste(Scenario2,"% Delta",sep=" ")]]<-round(Ab2delta,digits=2)
 
-#Write to table to then be imported axto excel -- when as .csv parenthesis became negative
-write.table(Summary.Table,paste(FilePre,"Summary_Table.txt"),row.names=FALSE)
+write.csv(Summary.Table, "SummaryTable.csv")
 
 ###PROGRAM COMPLETE###
 
