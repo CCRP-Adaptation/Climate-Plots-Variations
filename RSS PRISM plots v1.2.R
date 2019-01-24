@@ -278,7 +278,7 @@ p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard erro
 ggdraw(p3)
 
 OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-ggsave(OFName, width=8.5, height=8.5, dpi=dpi)
+ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
 
 ##########################
 
@@ -355,7 +355,7 @@ p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard erro
 ggdraw(p3)
 
 OFName <- paste(OFDir, "/PRISM ", PlotName, " Tmin Tmax ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
+ggsave(OFName, width=6.5, height=6.5, dpi=dpi)
 
 #2-panel Tmean/Precip plot
 p1 = plot_grid(c, d, nrow=2, align="v")
@@ -365,7 +365,7 @@ p3 = add_sub(p2, paste("Gray shaded area around regression lines = standard erro
 ggdraw(p3)
 
 OFName <- paste(OFDir, "/PRISM ", PlotName, " Tmean Precip ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
-ggsave(OFName, width=6.5, height=8.5, dpi=dpi)
+ggsave(OFName, width=6.5, height=6.5, dpi=dpi)
 
 		# regressions for trends
 lmTmax <- lm(yrAvgs$tmaxAvg~cYr)
