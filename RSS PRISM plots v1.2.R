@@ -785,6 +785,94 @@ ggdraw(p3)
 OFName = paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
 ggsave(OFName, width=6.5, height=8.5)
 
+#-------------------------------------------------#
+############  Decadal barplots   #############
+#-------------------------------------------------#
+head(baseData)
+baseData$decade <- baseData$yr - baseData$yr %% 10
+DecDat<-aggregate(cbind(tmin,tmax,tmean)~decade,baseData,mean,na.rm=TRUE)
+DecDat1<-aggregate(ppt~yr,baseData,sum,na.rm=TRUE)
+DecDat1$decade<-DecDat1$yr - DecDat1$yr %% 10
+DecDat2<-aggregate(ppt~decade,DecDat1,mean,na.rm=TRUE)
+DecDat<-merge(DecDat,DecDat2,by="decade"); rm(DecDat1,DecDat2)
+
+DecDat$Atmin<-DecDat$tmin-mean(DecDat$tmin)
+DecDat$Atmax<-DecDat$tmax-mean(DecDat$tmax)
+DecDat$Atmean<-DecDat$tmean-mean(DecDat$tmean)
+DecDat$Appt<-DecDat$ppt-mean(DecDat$ppt)
+# DecDat$Appt[1]<-(DecDat$ppt[1]*2)-mean(DecDat$ppt)
+
+DecDat$Atmax.col = ifelse(DecDat$Atmax > 0, "red", "blue")
+DecDat$Atmin.col = ifelse(DecDat$Atmin > 0, "red", "blue")
+DecDat$Atmean.col = ifelse(DecDat$Atmean > 0, "red", "blue")
+DecDat$Appt.col = ifelse(DecDat$Appt > 0, "green", "brown")
+
+PLOT<-"PRISM Decadal barplot - "
+# Tmax
+ggplot(DecDat, aes(x=decade, y=Atmax, fill=Atmax.col)) + 
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("blue", "red")) +
+  labs(title="Average Decadal Max Temperature Climate Anomaly",x="", y=expression(paste("Tmax (", degree*F,")", sep=""))) + 
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000)) 
+ggsave(paste(PLOT,"Tmax.png",sep=""),width = 15, height = 9)
+
+#Tmin
+ggplot(DecDat, aes(x=decade, y=Atmin, fill=Atmin.col)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("blue", "red")) +
+  labs(title="Average Decadal Min Temperature Climate Anomaly",x="", y=expression(paste("Tmin (", degree*F,")", sep=""))) +  
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
+ggsave(paste(PLOT,"Tmin.png",sep=""),width = 15, height = 9)
+
+#Tmean 
+ggplot(DecDat, aes(x=decade, y=Atmean, fill=Atmean.col)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("blue", "red")) +
+  labs(title="Average Decadal Mean Temperature Climate Anomaly",x="", y=expression(paste("Tmean (", degree*F,")", sep=""))) +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
+ggsave(paste(PLOT,"Tmean.png",sep=""),width = 15, height = 9)
+
+#Precip
+ggplot(DecDat, aes(x=decade, y=Appt, fill=Appt.col)) + 
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("brown", "dark green")) +
+  labs(title="Average Decadal Annual Precipitation Climate Anomaly",x="", y="Precip (in/yr)") +
+  scale_x_continuous(breaks=c(1900, 1920, 1940, 1960, 1980, 2000))
+ggsave(paste(PLOT,"Ppt.png",sep=""),width = 15, height = 9)
+
+
+###### SPEI calculations
+library(SPEI)
+SPEI_per<-12 # Use 6-month SPEI 
+truncation<- -0.75
+
+head(baseData)
+baseData$Tmean_C<-(baseData$tmean - 32) * 5/9
+baseData$Precip<- baseData$ppt *25.4
+baseData$PET<-thornthwaite(baseData$Tmean_C, Lat)
+SPEI<-spei(baseData$Precip - baseData$PET, SPEI_per)
+baseData$SPEI<-SPEI$fitted
+
+spei<-subset(baseData,select=c(yr,mon,SPEI))
+spei$date<-as.Date(paste(spei$yr,spei$mon,"01",sep="-"),format="%Y-%m-%d")
+
+spei$col[spei$SPEI>=0]<-"wet"
+spei$col[spei$SPEI<0]<-"dry"
+spei$col<-factor(spei$col, levels=c("wet","dry"))
+
+ggplot(data = spei, aes(x = date, y = SPEI,fill = col)) + 
+  geom_bar(stat="identity",aes(fill=col)) +
+  scale_fill_manual(name="",values =c("blue","red")) +
+  theme(axis.text=element_text(size=20),axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.8),
+        plot.title=element_text(size=18,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20), legend.title=element_text(size=20)) +
+  labs(title = "SPEI values for Historical Period", 
+       x = "Date", y = "SPEI") +
+  guides(color=guide_legend(override.aes = list(size=7))) +
+  scale_y_continuous(limits=c(min(spei$SPEI)-.5, max(spei$SPEI)+1))
+ggsave("Historical SPEI.png",width = 15, height = 9)
+
 
 ### EOF ###
 
