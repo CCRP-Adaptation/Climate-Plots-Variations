@@ -204,7 +204,6 @@ rm(newrow)
 ggplot(DM3mean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   PlotTheme +
-  coord_cartesian(ylim=c(0, 20)) +
   labs(title = paste(SiteID, "- Max Annual Avg. Drought Length in Historical (1950-1999) & Future (2025-2055)"), 
        x = "Historical & Future Climate Scenarios", y = "Drought Length (Days)") +
   scale_fill_manual(name="", values = colors3)
