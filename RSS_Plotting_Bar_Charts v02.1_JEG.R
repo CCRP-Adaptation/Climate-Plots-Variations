@@ -126,9 +126,9 @@ t2.annual$CF<-factor(t2.annual$CF,levels=c("Historical",Scenario1, Scenario2), o
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
 scatter + geom_point(aes(color=emissions),size=4) + 
   PlotTheme + 
-  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
+  labs(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
-            y = "Change in average annual precipitation (in)")) +
+            y = "Change in average annual precipitation (in)") +
   scale_colour_manual(values=col.RCP2)+
   guides(color=guide_legend(title="Emissions\nScenarios\n")) +
   # geom_rect(color = "blue", alpha=0) + 
@@ -226,8 +226,8 @@ ggplot(TOHotTempmean, aes(x=CF,y=MeanOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   PlotTheme +
   #coord_cartesian(ylim=c(50, 65)) +
-  labs(list(title = paste(SiteID, "- Avg. Tot. Days/Yr >", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
-            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future"))  +
+  labs(title = paste(SiteID, "- Avg. Tot. Days/Yr >", HotTemp, "Deg in Historical (1950-1999) & Future (2025-2055)"), 
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")  +
   scale_fill_manual(name="",values = colors3)
 
 ggsave(sprintf("%s_%s_%s_Days_Over_HotTemp.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
@@ -248,8 +248,8 @@ ggplot(TCOHotTempmean, aes(x=CF,y=MeanContinOverHotTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   PlotTheme +
   # coord_cartesian(ylim=c(0, 40)) +
-  labs(list(title = paste(SiteID, "- Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
-            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future"))  +
+  labs(title = paste(SiteID, "- Consec. Days/Yr > ", HotTemp, "Deg in Historical (1950-1999) & ", Year), 
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")  +
   scale_fill_manual(name="",values = colors3)
 
 ggsave(sprintf("%s_%s_%s_Consecutive Days_Over_HotTemp.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
@@ -270,8 +270,8 @@ ggplot(TUColdTempmean, aes(x=CF,y=MeanUnderColdTemp,fill=CF)) +
   geom_bar(stat="identity",position="dodge") +
   PlotTheme +
     #  coord_cartesian(ylim=c(30, 65)) +
-  labs(list(title = paste(SiteID, "- Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
-            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future"))  +
+  labs(title = paste(SiteID, "- Days/Yr < ", ColdTemp, "Deg in Historical (1950-1999) & ", Year), 
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")  +
   scale_fill_manual(name="",values = colors3)
 
 ggsave(sprintf("%s_%s_%s_Days_Under_ColdTemp.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
@@ -290,8 +290,8 @@ TU5thPercentilemean$MeanUnder5th<-as.numeric(TU5thPercentilemean$MeanUnder5th)
 ggplot(TU5thPercentilemean, aes(x=CF, y=MeanUnder5th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   PlotTheme +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " °F) in ", Year, sep=""),
-            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")) +
+  labs(title = paste(SiteID, " - Days/Yr with Tmin < Historic 5th Percentile (", round(HistTmin05, 1), " °F) in ", Year, sep=""),
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future") +
   scale_fill_manual(name="",values = colors3)
 
 ggsave(sprintf("%s_%s_%s_Days_Under_5thPercentile.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
@@ -309,8 +309,8 @@ TO95thPercentilemean$MeanOver95th<-as.numeric(TO95thPercentilemean$MeanOver95th)
 ggplot(TO95thPercentilemean, aes(x=CF, y=MeanOver95th, fill=CF)) +
   geom_bar(stat="identity", position="dodge") +
   PlotTheme +
-  labs(list(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " °F) in ", Year, sep=""),
-            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future")) +
+  labs(title = paste(SiteID, " - Days/Yr with Tmax > Historic 95th Percentile (", round(HistTmax95, 1), " °F) in ", Year, sep=""),
+            x = "Historical & Future Climate Scenarios", y = "Days/Yr", colour = "Climate Future") +
   scale_fill_manual(name="",values = colors3)
 
 ggsave(sprintf("%s_%s_%s_Days_Over_95thPercentile.png", SiteID, Lat, Lon), width = PlotWidth, height = PlotHeight)
@@ -346,9 +346,9 @@ if(grepl("Dry", Scenario1) | grepl("Moist", Scenario1)){
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr))
 scatter + geom_point(aes(color=emissions),size=4) + 
   PlotTheme + 
-  labs(list(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
+  labs(title = paste(SiteID, "- Changes in climate means in", Year,"by GCM run"), 
             x = "Change in annual average temperature (F)", 
-            y = "Change in average annual precipitation (in)")) +
+            y = "Change in average annual precipitation (in)") +
   scale_colour_manual(values=col.RCP2)+
   guides(color=guide_legend(title="Emissions\nScenarios\n")) +
   geom_rect(xmin=xmin1, xmax=xmax1, ymin=ymin1, ymax=ymax1, color = col1, alpha=0, size=1) + 
