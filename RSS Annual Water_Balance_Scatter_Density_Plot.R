@@ -19,7 +19,7 @@ ParkCode = "CHCU"
 OutDir = "Outputs"
 
 #Colors for historical + future scenarios 
-c3 = c("black", "light blue", "red") #colors for historical, warm wet, and hot dry scenarios
+c3 = c("black", "blue", "orange") #colors for historical, warm wet, and hot dry scenarios
 
 #Future scenario and GCM names
 cfNames = c("Warm Wet", "Hot Dry")
@@ -82,7 +82,8 @@ hww$gcm = factor(hww$gcm, levels=c("Historical", cfNames))
 #Density Plot
 basePlot <- ggplot(hww, aes(x=deficit, colour=gcm,fill=gcm),show.legend=F) +geom_density(alpha=0.3)+ 
   scale_colour_manual("Scenario",values=c3,labels=c("Historical",paste(cfNames, " (", GCMNames, ")", sep=""))) +
-  scale_fill_manual("Scenario",values=c3,labels=c("Historical",paste(cfNames, " (", GCMNames, ")", sep="")))
+  scale_fill_manual("Scenario",values=c3,labels=c("Historical",paste(cfNames, " (", GCMNames, ")", sep=""))) +
+  scale_x_continuous(limits=c(0, 35))
 
 labelled <- basePlot + 
   labs(
