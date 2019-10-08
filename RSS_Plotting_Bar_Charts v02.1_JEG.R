@@ -70,6 +70,9 @@ PlotTheme = theme(axis.text=element_text(size=20),    #Text size for axis tick m
 #X-axis labels for monthly plots
 MonthLabels = c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
 
+#Output sub-directory for selected CFs
+CFDir = "HotWet WarmMoist CFs"
+
 #################### END INITIALS ##########################3
 
 
@@ -120,7 +123,9 @@ rm(cols, cols.char)
 
 t2.annual$CF<-factor(t2.annual$CF,levels=c("Historical",Scenario1, Scenario2), ordered=is.ordered(t2.annual$CF))
 
-###############################################################working############################################
+############################################################### Begin output plots ############################################
+
+setwd(CFDir)
 
 ###Scatter plot showing delta precip and tavg, color by emissions scenario, x-axis scaled 0-max, with points for averages of 3 CFs
 scatter = ggplot(Future_Means, aes(DeltaTavg, 365*DeltaPr, xmin=Tavg25, xmax=Tavg75, ymin=365*Pr25, ymax=365*Pr75))
