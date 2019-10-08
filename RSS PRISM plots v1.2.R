@@ -745,7 +745,7 @@ Annual.Anomaly$aTmin.col = ifelse(Annual.Anomaly$aTmin > 0, "red", "blue")
 Annual.Anomaly$aTmean.col = ifelse(Annual.Anomaly$aTmean > 0, "red", "blue")
 Annual.Anomaly$aPpt.col = ifelse(Annual.Anomaly$aPpt > 0, "green", "brown")
 
-PlotName <- "Red-Blue Anomaly Filled Line"
+PlotName <- "Red-Blue Anomaly Bar plot"
   OFName <- paste(OFDir, "/PRISM ", PlotName, " ", SiteID, " ", Lat, " ", Lon, ".png", sep = "")
 
   # Tmax
