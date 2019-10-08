@@ -47,7 +47,7 @@ Scenario2<-FutureSubset[2]
 col.RCP2 = c("blue", "red")
 
 ## All 508-compliant color scheme -- navy (hot wet), light blue (warm wet), pink (warm dry), red (hot dry)
-colors5 <-   c("#12045C","#9A9EE5","#F3D3CB","#E10720","white")
+#colors5 <-   c("#12045C","#9A9EE5","#F3D3CB","#E10720","white")
 #colors2<-c("#12045C","#F3D3CB") #navy - hot wet; pink - warm dry
 colors2 <- c("blue", "orange")
 colors3 <- c("dark grey","blue", "orange")
