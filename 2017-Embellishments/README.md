@@ -1,2 +1,2 @@
-# RSS-Plots
-Set of functions to parse historical PRISM data and CMIP5 projections, create data tables, and plot visualizations.
+# 2017-EMBELLISHMENTS
+DO NOT USE - Folder created in 2017 to make chagnes to scripts. Old versions of code. Kept for legacy.
